@@ -1,0 +1,134 @@
+﻿@page
+@model PortalFacturas.Pages.BuscadorModel
+@{ ViewData["Title"] = "Buscador"; }
+
+<form method="post" class="col-lg-6 offset-lg-3">
+    <div class="form-group row justify-content-center">
+        <select class="form-control" asp-for="EmisorID" asp-items="Model.ParticipantEmisor">
+            <option value="" disabled="" selected="">Seleccione Emisor DTE</option>
+        </select>
+        <span asp-validation-for="EmisorID" class="text-danger"></span>
+    </div>
+    <div class="form-group row justify-content-center">
+        <select class="form-control" asp-for="ReceptorID" asp-items="Model.ParticipantReceptor">
+            <option value="" disabled="" selected="">Seleccione Receptor DTE</option>
+        </select>
+        <span asp-validation-for="ReceptorID" class="text-danger"></span>
+    </div>
+    <button class="btn btn-lg btn-primary btn-block" type="submit" asp-page-handler="Buscar">Buscar</button>
+</form>
+@if (Model.Instructions.Count > 0)
+{
+var path = "";
+
+<div class="container-fluid table-responsive py-5">
+    <table class="table">
+        <thead>
+            <tr>
+                @*<th>
+                    F. Publicación
+                </th>*@
+                <th>
+                    F. Emisión
+                </th>
+                <th>
+                    Folio
+                </th>
+                <th>
+                    Concepto
+                </th>
+                <th>
+                    Neto
+                </th>
+                <th>
+                    Iva
+                </th>
+                <th>
+                    Total
+                </th>
+                <th>
+                </th>
+                <th>
+                </th>
+
+            </tr>
+        </thead>
+        <tbody>
+
+            @foreach (var item in Model.Instructions)
+            {
+                var existelink = false;
+            @if (item.DteResult != null)
+                        {
+                    byte[] toEncodeAsBytes = System.Text.ASCIIEncoding.ASCII.GetBytes(@item.DteResult.RelativeEmissionFile);
+                     path = System.Convert.ToBase64String(toEncodeAsBytes);
+            existelink = true;
+             }
+            <tr>
+                @*<td>
+                    @{ var fecha = item.AuxiliaryData.PaymentMatrixPublication;
+                        @String.Format("{0:dd-MM-yyyy}", fecha);
+                    }
+                </td>*@
+                <td>
+                    @{
+                        if (existelink)
+                        {
+                            var emi = item.DteResult.EmissionDt;
+                            if (item.DteResult.EmissionDt != new DateTime(0001, 01, 01))
+                            {
+                        @String.Format("{0:dd-MM-yyyy}", emi);
+
+                            }
+                        }
+                    }
+                </td>
+                <td>
+                    @{
+                        if (existelink){ @Html.DisplayFor(modelItem => item.DteResult.Folio) }
+                    }
+
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.AuxiliaryData.PaymentMatrixConcept)
+                </td>
+                <td>
+                    @{ var monto = item.Amount;
+                        @String.Format(System.Globalization.CultureInfo.GetCultureInfo("es-CL"), "{0:C}", monto)  }
+                </td>
+                <td>
+                    @{  @String.Format(System.Globalization.CultureInfo.GetCultureInfo("es-CL"), "{0:C}", monto * 0.19)  }
+                </td>
+                <td>
+                    @{  @String.Format(System.Globalization.CultureInfo.GetCultureInfo("es-CL"), "{0:C}", monto * 1.19)  }
+                </td>
+                <td>
+                    @{ if (existelink)
+                        {
+                        <a class="bi bi-search" asp-page="./Invoice" target="_blank" asp-route-renderpath="@path" asp-page-handler="HtmlDoc" asp-route-folio="@item.DteResult.Folio"></a>
+                        }
+                    }
+                </td>
+                <td>
+                    @{ if (existelink)
+                        {
+                        <a class="bi bi-file-code" asp-page="./Invoice" target="_blank" asp-route-renderpath="@path" asp-page-handler="XmlDoc" asp-route-folio="@item.DteResult.Folio"></a>
+                        }
+                    }
+                </td>
+                <td>
+                    @{ if (existelink)
+                        {
+                        <a class="bi bi-file-pdf" asp-page="./Invoice" target="_blank" asp-route-renderpath="@path" asp-page-handler="PdfDoc" asp-route-folio="@item.DteResult.Folio"></a>
+                        }
+                    }
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>
+</div>
+                        }
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}
