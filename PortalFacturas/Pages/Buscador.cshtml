@@ -19,15 +19,15 @@
 </form>
 @if (Model.Instructions.Count > 0)
 {
-var path = "";
+    var path = "";
 
 <div class="container-fluid table-responsive py-5">
     <table class="table">
         <thead>
             <tr>
                 @*<th>
-                    F. Publicación
-                </th>*@
+                        F. Publicación
+                    </th>*@
                 <th>
                     F. Emisión
                 </th>
@@ -58,77 +58,87 @@ var path = "";
             @foreach (var item in Model.Instructions)
             {
                 var existelink = false;
-            @if (item.DteResult != null)
-                        {
+                @if (item.DteResult != null)
+                {
                     byte[] toEncodeAsBytes = System.Text.ASCIIEncoding.ASCII.GetBytes(@item.DteResult.RelativeEmissionFile);
-                     path = System.Convert.ToBase64String(toEncodeAsBytes);
-            existelink = true;
-             }
-            <tr>
-                @*<td>
-                    @{ var fecha = item.AuxiliaryData.PaymentMatrixPublication;
-                        @String.Format("{0:dd-MM-yyyy}", fecha);
-                    }
-                </td>*@
-                <td>
-                    @{
-                        if (existelink)
-                        {
-                            var emi = item.DteResult.EmissionDt;
-                            if (item.DteResult.EmissionDt != new DateTime(0001, 01, 01))
+                    path = System.Convert.ToBase64String(toEncodeAsBytes);
+                    existelink = true;
+                }
+                <tr>
+                    @*<td>
+                            @{ var fecha = item.AuxiliaryData.PaymentMatrixPublication;
+                                @String.Format("{0:dd-MM-yyyy}", fecha);
+                            }
+                        </td>*@
+                    <td>
+                        @{
+                            if (existelink)
                             {
-                        @String.Format("{0:dd-MM-yyyy}", emi);
-
+                                var emi = item.DteResult.EmissionDt;
+                                if (item.DteResult.EmissionDt != new DateTime(0001, 01, 01))
+                                {
+                                    @String.Format("{0:dd-MM-yyyy}", emi);
+                                }
                             }
                         }
-                    }
-                </td>
-                <td>
-                    @{
-                        if (existelink){ @Html.DisplayFor(modelItem => item.DteResult.Folio) }
-                    }
+                    </td>
+                    <td>
+                        @{
+                            if (existelink)
+                            { @Html.DisplayFor(modelItem => item.DteResult.Folio) }
+                        }
 
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.AuxiliaryData.PaymentMatrixConcept)
-                </td>
-                <td>
-                    @{ var monto = item.Amount;
-                        @String.Format(System.Globalization.CultureInfo.GetCultureInfo("es-CL"), "{0:C}", monto)  }
-                </td>
-                <td>
-                    @{  @String.Format(System.Globalization.CultureInfo.GetCultureInfo("es-CL"), "{0:C}", monto * 0.19)  }
-                </td>
-                <td>
-                    @{  @String.Format(System.Globalization.CultureInfo.GetCultureInfo("es-CL"), "{0:C}", monto * 1.19)  }
-                </td>
-                <td>
-                    @{ if (existelink)
-                        {
-                        <a class="bi bi-search" asp-page="./Invoice" target="_blank" asp-route-renderpath="@path" asp-page-handler="HtmlDoc" asp-route-folio="@item.DteResult.Folio"></a>
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.AuxiliaryData.PaymentMatrixConcept)
+                    </td>
+                    <td>
+                        @{ var monto = item.Amount;
+                            @String.Format(System.Globalization.CultureInfo.GetCultureInfo("es-CL"), "{0:C}", monto) }
+                    </td>
+                    <td>
+                        @{ @String.Format(System.Globalization.CultureInfo.GetCultureInfo("es-CL"), "{0:C}", monto * 0.19) }
+                    </td>
+                    <td>
+                        @{ @String.Format(System.Globalization.CultureInfo.GetCultureInfo("es-CL"), "{0:C}", monto * 1.19) }
+                    </td>
+                    <td>
+                        @{ if (existelink)
+                            {
+                                <a class="bi bi-search" asp-page="./Invoice" target="_blank" asp-route-renderpath="@path" asp-page-handler="HtmlDoc" asp-route-folio="@item.DteResult.Folio"></a>
+                            }
                         }
-                    }
-                </td>
-                <td>
-                    @{ if (existelink)
-                        {
-                        <a class="bi bi-file-code" asp-page="./Invoice" target="_blank" asp-route-renderpath="@path" asp-page-handler="XmlDoc" asp-route-folio="@item.DteResult.Folio"></a>
+                    </td>
+                    <td>
+                        @{ if (existelink)
+                            {
+                                <a class="bi bi-file-code" asp-page="./Invoice" target="_blank" asp-route-renderpath="@path" asp-page-handler="XmlDoc" asp-route-folio="@item.DteResult.Folio"></a>
+                            }
                         }
-                    }
-                </td>
-                <td>
-                    @{ if (existelink)
-                        {
-                        <a class="bi bi-file-pdf" asp-page="./Invoice" target="_blank" asp-route-renderpath="@path" asp-page-handler="PdfDoc" asp-route-folio="@item.DteResult.Folio"></a>
+                    </td>
+                    <td>
+                        @{ if (existelink)
+                            {
+                                <a class="bi bi-file-pdf" asp-page="./Invoice" target="_blank" asp-route-renderpath="@path" asp-page-handler="PdfDoc" asp-route-folio="@item.DteResult.Folio"></a>
+                            }
                         }
-                    }
-                </td>
-            </tr>
+                    </td>
+                </tr>
             }
         </tbody>
     </table>
+    <div>
+        <ul class="pagination">
+            @for (var i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                    <a asp-route-offset="@i" class="page-link" asp-page-handler="Pagina">@i</a>
+                </li>
+            }
+        </ul>
+    </div>
 </div>
-                        }
+}
 @section Scripts {
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 }

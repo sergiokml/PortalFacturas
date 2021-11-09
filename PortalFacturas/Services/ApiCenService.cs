@@ -20,7 +20,7 @@ namespace PortalFacturas.Services
     public class ApiCenService : IApiCenService
     {
         private readonly HttpClient httpClient;
-        private readonly JsonSerializerOptions jsonSerializerOptions;
+        //private readonly JsonSerializerOptions jsonSerializerOptions;
         private readonly OptionsModel options;
 
         public IConfiguration Configuration { get; }
@@ -48,9 +48,9 @@ namespace PortalFacturas.Services
             return ((dynamic)(await (await httpClient.PostAsJsonAsync("token-auth/", value)).Content.ReadFromJsonAsync<TokenAuth>()))?.Token;
         }
 
-        public async Task<InstructionModel> GetInstructionsAsync(int creditor, int debtor)
+        public async Task<InstructionModel> GetInstructionsAsync(int creditor, int debtor, string offset)
         {
-            string requestUri = $"v2/resources/instructions/?creditor={creditor}&debtor={debtor}";
+            string requestUri = $"v2/resources/instructions/?creditor={creditor}&debtor={debtor}&limit=10&offset={offset}";
             return await httpClient.GetFromJsonAsync<InstructionModel>(requestUri);
         }
 
