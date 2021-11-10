@@ -48,10 +48,17 @@ namespace PortalFacturas.Services
             return ((dynamic)(await (await httpClient.PostAsJsonAsync("token-auth/", value)).Content.ReadFromJsonAsync<TokenAuth>()))?.Token;
         }
 
-        public async Task<InstructionModel> GetInstructionsAsync(int creditor, int debtor, string offset)
+        public async Task<InstructionModel> GetInstructionsAsync(int creditor, int debtor)
         {
-            string requestUri = $"v2/resources/instructions/?creditor={creditor}&debtor={debtor}&limit=10&offset={offset}";
-            return await httpClient.GetFromJsonAsync<InstructionModel>(requestUri);
+            string requestUri = $"v2/resources/instructions/?creditor={creditor}&debtor={debtor}";
+            try
+            {
+                return await httpClient.GetFromJsonAsync<InstructionModel>(requestUri);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
         public async Task<List<ParticipantResult>> GetParticipantsAsync(string username)

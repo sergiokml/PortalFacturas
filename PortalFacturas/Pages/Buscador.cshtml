@@ -1,4 +1,4 @@
-﻿@page
+﻿@page 
 @model PortalFacturas.Pages.BuscadorModel
 @{ ViewData["Title"] = "Buscador"; }
 
@@ -19,7 +19,7 @@
 </form>
 @if (Model.Instructions.Count > 0)
 {
-    var path = "";
+    var path = ""; 
 
 <div class="container-fluid table-responsive py-5">
     <table class="table">
@@ -132,7 +132,7 @@
             @for (var i = 1; i <= Model.TotalPages; i++)
             {
                 <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
-                    <a asp-route-offset="@i" class="page-link" asp-page-handler="Pagina">@i</a>
+                    <a asp-route-currentpage="@i" class="page-link" asp-page-handler="Pagina">@i</a>
                 </li>
             }
         </ul>

@@ -23,10 +23,12 @@ namespace PortalFacturas.Pages
         public int PageSize { get; set; } = 10;
         public int TotalPages => (int)Math.Ceiling(decimal.Divide(Count, PageSize));
 
-        [BindProperty]
+        [TempData]
+        [BindProperty(SupportsGet = true)]
         [Display(Name = "Receptor")]
         public int ReceptorID { get; set; }
 
+        [TempData]
         [BindProperty]
         [Display(Name = "Emisor")]
         public int EmisorID { get; set; }
@@ -46,17 +48,27 @@ namespace PortalFacturas.Pages
             this.apiCenService = apiCenService;
         }
 
-        public async Task<List<InstructionResult>> GetPaginatedResult(string offset, int currentPage, int pageSize = 10)
+        public async Task<List<InstructionResult>> GetPaginatedResult(int currentPage, int pageSize = 10)
         {
-            InstructionModel l = await apiCenService.GetInstructionsAsync(EmisorID, ReceptorID, offset);
+            if (EmisorID is 0)
+            {
+                throw new ArgumentNullException(nameof(EmisorID));
+            }
+            if (ReceptorID is 0)
+            {
+                throw new ArgumentNullException(nameof(ReceptorID));
+            }
+
+
+
+            InstructionModel l = await apiCenService.GetInstructionsAsync(EmisorID, ReceptorID);
             Count = l.Count;
 
             Instructions = l.Results
                 .OrderByDescending((InstructionResult c) => c.AuxiliaryData.PaymentMatrixPublication).ToList();
-
+            Instructions = Instructions.Skip((currentPage - 1) * pageSize).Take(pageSize).ToList();
             await apiCenService.GetDocumentos(Instructions);
-
-            return Instructions.Skip((currentPage - 1) * pageSize).Take(pageSize).ToList();
+            return Instructions;
         }
 
         public async Task OnGetAsync()
@@ -69,40 +81,29 @@ namespace PortalFacturas.Pages
         {
             if (ModelState.IsValid)
             {
-                //Instructions = (await apiCenService.GetInstructionsAsync(EmisorID, ReceptorID)).Results.OrderByDescending((InstructionResult c) => c.AuxiliaryData.PaymentMatrixPublication).ToList();
-                //await apiCenService.GetDocumentos(Instructions);
-
-                //Pag      
-                Instructions = await GetPaginatedResult("0", CurrentPage, PageSize);
-
+                Instructions = await GetPaginatedResult(CurrentPage, PageSize);
+                TempData["EmisorID"] = EmisorID;
+                TempData["ReceptorID"] = ReceptorID;
             }
             await LlenarCombosAsync();
         }
 
-        public void OnPostPagina()
+        public async Task OnGetPaginaAsync()
         {
-            //return null;
-
-        }
-
-        public async Task OnGetPaginaAsync(string offset)
-        {
-
-            Instructions = await GetPaginatedResult(offset, CurrentPage, PageSize);
-
+            if (ModelState.IsValid)
+            {
+                Instructions = await GetPaginatedResult(CurrentPage, PageSize);
+                TempData.Keep("EmisorID");
+                TempData.Keep("ReceptorID");
+                await LlenarCombosAsync();
+            }
         }
 
         public async Task LlenarCombosAsync()
         {
             UserName = "miguel.buzunariz@enel.com";
-
-
             ParticipantReceptor = new SelectList(await apiCenService.GetParticipantsAsync(UserName), nameof(ParticipantResult.Id), nameof(ParticipantResult.Name));
-
-
             ParticipantEmisor = new SelectList(await apiCenService.GetParticipantsAsync(), nameof(ParticipantResult.Id), nameof(ParticipantResult.Name));
         }
-
     }
-
 }
