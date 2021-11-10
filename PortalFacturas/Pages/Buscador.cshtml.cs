@@ -24,7 +24,7 @@ namespace PortalFacturas.Pages
         public int TotalPages => (int)Math.Ceiling(decimal.Divide(Count, PageSize));
 
         [TempData]
-        [BindProperty(SupportsGet = true)]
+        [BindProperty]
         [Display(Name = "Receptor")]
         public int ReceptorID { get; set; }
 

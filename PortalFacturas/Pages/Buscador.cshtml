@@ -22,15 +22,17 @@
     var path = ""; 
 
 <div class="container-fluid table-responsive py-5">
-    <table class="table">
+    <table class="table table-sm">
         <thead>
             <tr>
                 @*<th>
                         F. Publicación
                     </th>*@
-                <th>
-                    F. Emisión
-                </th>
+                <th scope="col">
+              
+                        F. Emisión
+                    
+</th>
                 <th>
                     Folio
                 </th>
@@ -71,23 +73,23 @@
                             }
                         </td>*@
                     <td>
-                        @{
-                            if (existelink)
-                            {
-                                var emi = item.DteResult.EmissionDt;
-                                if (item.DteResult.EmissionDt != new DateTime(0001, 01, 01))
+                     
+                            @{
+                                if (existelink)
                                 {
-                                    @String.Format("{0:dd-MM-yyyy}", emi);
+                                    var emi = item.DteResult.EmissionDt;
+                                    if (item.DteResult.EmissionDt != new DateTime(0001, 01, 01))
+                                    {
+                                        @String.Format("{0:dd-MM-yyyy}", emi);
+                                    }
                                 }
                             }
-                        }
-                    </td>
+</td>
                     <td>
                         @{
                             if (existelink)
                             { @Html.DisplayFor(modelItem => item.DteResult.Folio) }
                         }
-
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.AuxiliaryData.PaymentMatrixConcept)
