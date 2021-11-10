@@ -24,12 +24,12 @@ namespace PortalFacturas.Pages
         public int TotalPages => (int)Math.Ceiling(decimal.Divide(Count, PageSize));
 
         [TempData]
-        [BindProperty]
+        [BindProperty(SupportsGet = true)]
         [Display(Name = "Receptor")]
         public int ReceptorID { get; set; }
 
         [TempData]
-        [BindProperty]
+        [BindProperty(SupportsGet = true)]
         [Display(Name = "Emisor")]
         public int EmisorID { get; set; }
 
@@ -48,7 +48,7 @@ namespace PortalFacturas.Pages
             this.apiCenService = apiCenService;
         }
 
-        public async Task<List<InstructionResult>> GetPaginatedResult(int currentPage, int pageSize = 10)
+        private async Task<List<InstructionResult>> GetPaginatedResult(int currentPage, int pageSize = 10)
         {
             if (EmisorID is 0)
             {
@@ -58,8 +58,6 @@ namespace PortalFacturas.Pages
             {
                 throw new ArgumentNullException(nameof(ReceptorID));
             }
-
-
 
             InstructionModel l = await apiCenService.GetInstructionsAsync(EmisorID, ReceptorID);
             Count = l.Count;
@@ -71,12 +69,20 @@ namespace PortalFacturas.Pages
             return Instructions;
         }
 
+        /// <summary>
+        /// Primera carga desde Index
+        /// </summary>
+        /// <returns></returns>
         public async Task OnGetAsync()
         {
             await LlenarCombosAsync();
             TempData.Keep("UserName");
         }
 
+        /// <summary>
+        /// Botón Principal
+        /// </summary>
+        /// <returns></returns>
         public async Task OnPostBuscarAsync()
         {
             if (ModelState.IsValid)
@@ -84,10 +90,15 @@ namespace PortalFacturas.Pages
                 Instructions = await GetPaginatedResult(CurrentPage, PageSize);
                 TempData["EmisorID"] = EmisorID;
                 TempData["ReceptorID"] = ReceptorID;
+                TempData.Keep("UserName");
+                await LlenarCombosAsync();
             }
-            await LlenarCombosAsync();
         }
 
+        /// <summary>
+        /// Botones Html/Xml/Pdf
+        /// </summary>
+        /// <returns></returns>
         public async Task OnGetPaginaAsync()
         {
             if (ModelState.IsValid)
@@ -99,7 +110,7 @@ namespace PortalFacturas.Pages
             }
         }
 
-        public async Task LlenarCombosAsync()
+        private async Task LlenarCombosAsync()
         {
             UserName = "miguel.buzunariz@enel.com";
             ParticipantReceptor = new SelectList(await apiCenService.GetParticipantsAsync(UserName), nameof(ParticipantResult.Id), nameof(ParticipantResult.Name));
