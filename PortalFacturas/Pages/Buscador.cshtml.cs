@@ -23,15 +23,15 @@ namespace PortalFacturas.Pages
         public int PageSize { get; set; } = 10;
         public int TotalPages => (int)Math.Ceiling(decimal.Divide(Count, PageSize));
 
-        [TempData]
+        [Required]
         [BindProperty(SupportsGet = true)]
         [Display(Name = "Receptor")]
-        public int ReceptorID { get; set; }
+        public string ReceptorID { get; set; }
 
-        [TempData]
+        [Required]
         [BindProperty(SupportsGet = true)]
         [Display(Name = "Emisor")]
-        public int EmisorID { get; set; }
+        public string EmisorID { get; set; }
 
         [BindProperty]
         public List<InstructionResult> Instructions { get; set; } = new List<InstructionResult>();
@@ -43,6 +43,9 @@ namespace PortalFacturas.Pages
 
         public SelectList ParticipantReceptor { get; set; }
 
+
+        public string MensajeError { get; set; }
+
         public BuscadorModel(IApiCenService apiCenService)
         {
             this.apiCenService = apiCenService;
@@ -50,14 +53,14 @@ namespace PortalFacturas.Pages
 
         private async Task<List<InstructionResult>> GetPaginatedResult(int currentPage, int pageSize = 10)
         {
-            if (EmisorID is 0)
-            {
-                throw new ArgumentNullException(nameof(EmisorID));
-            }
-            if (ReceptorID is 0)
-            {
-                throw new ArgumentNullException(nameof(ReceptorID));
-            }
+            //if (EmisorID == 0)
+            //{
+            //    throw new ArgumentNullException(nameof(EmisorID));
+            //}
+            //if (string.IsNullOrEmpty(ReceptorID.ToString()))
+            //{
+            //    throw new ArgumentNullException(nameof(ReceptorID));
+            //}
 
             InstructionModel l = await apiCenService.GetInstructionsAsync(EmisorID, ReceptorID);
             Count = l.Count;
@@ -87,11 +90,28 @@ namespace PortalFacturas.Pages
         {
             if (ModelState.IsValid)
             {
-                Instructions = await GetPaginatedResult(CurrentPage, PageSize);
-                TempData["EmisorID"] = EmisorID;
-                TempData["ReceptorID"] = ReceptorID;
-                TempData.Keep("UserName");
-                await LlenarCombosAsync();
+
+                try
+                {
+
+
+
+                    EmisorID = ModelState["EmisorID"].AttemptedValue;
+                    ReceptorID = ModelState["ReceptorID"].AttemptedValue;
+                    //TempData["EmisorID"] = EmisorID;
+                    //TempData["ReceptorID"] = ReceptorID;
+
+
+                    TempData.Keep("UserName");
+                    Instructions = await GetPaginatedResult(CurrentPage, PageSize);
+                    await LlenarCombosAsync();
+                }
+                catch (Exception ex)
+                {
+                    MensajeError = ex.Message;
+                    //                    throw new Exception(ex.Message);
+                    //return Page();
+                }
             }
         }
 
@@ -115,6 +135,7 @@ namespace PortalFacturas.Pages
             UserName = "miguel.buzunariz@enel.com";
             ParticipantReceptor = new SelectList(await apiCenService.GetParticipantsAsync(UserName), nameof(ParticipantResult.Id), nameof(ParticipantResult.Name));
             ParticipantEmisor = new SelectList(await apiCenService.GetParticipantsAsync(), nameof(ParticipantResult.Id), nameof(ParticipantResult.Name));
+
         }
     }
 }

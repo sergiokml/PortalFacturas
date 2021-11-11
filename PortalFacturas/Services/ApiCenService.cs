@@ -48,7 +48,7 @@ namespace PortalFacturas.Services
             return ((dynamic)(await (await httpClient.PostAsJsonAsync("token-auth/", value)).Content.ReadFromJsonAsync<TokenAuth>()))?.Token;
         }
 
-        public async Task<InstructionModel> GetInstructionsAsync(int creditor, int debtor)
+        public async Task<InstructionModel> GetInstructionsAsync(string creditor, string debtor)
         {
             string requestUri = $"v2/resources/instructions/?creditor={creditor}&debtor={debtor}";
             try
