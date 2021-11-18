@@ -20,9 +20,10 @@
  </div>
 
  <div class="checkbox mb-3">
-  <label>
-   <input type="checkbox" value="remember-me"> Recordar
-  </label>
+           <label>
+             <input asp-for="Recordar"/> @Html.DisplayNameFor(model => model.Recordar)
+         </label>
+     
  </div>
  <button class="btn btn-lg btn-primary btn-block" type="submit">Entrar</button>
 </form>

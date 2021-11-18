@@ -1,7 +1,6 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -12,15 +11,14 @@ using PortalFacturas.Pages;
 using PortalFacturas.Services;
 
 using System;
-using System.Net.Http;
 
 namespace PortalFacturas
 {
     public class Startup
     {
-        public IConfiguration Configuration { get; }
         public OptionsModel options = new OptionsModel();
 
+        public IConfiguration Configuration { get; }
 
         public Startup(IConfiguration configuration)
         {
@@ -30,7 +28,7 @@ namespace PortalFacturas
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRazorPages();
-            services.AddHttpClient<IApiCenService, ApiCenService>(delegate (HttpClient c)
+            services.AddHttpClient<IApiCenService, ApiCenService>(c =>
             {
                 c.BaseAddress = new Uri(Configuration.GetConnectionString("EndPointCen") ?? "");
             });
@@ -49,17 +47,13 @@ namespace PortalFacturas
             else
             {
                 Configuration.Bind("AppOptionsProd", options);
-                app.UseExceptionHandler("/Error");
                 app.UseHsts();
             }
-
-
-
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
             app.UseAuthorization();
-            app.UseEndpoints(delegate (IEndpointRouteBuilder endpoints)
+            app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
             });

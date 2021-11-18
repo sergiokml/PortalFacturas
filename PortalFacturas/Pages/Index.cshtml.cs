@@ -20,34 +20,19 @@ namespace PortalFacturas.Pages
 
         [BindProperty]
         public string Password { get; set; }
+
+        [BindProperty]
+        public bool Recordar
+        {
+            get;
+            set;
+        }
         public IndexModel(IApiCenService apiCenService)
         {
             this.apiCenService = apiCenService;
         }
 
-        public async Task<IActionResult> OngetAsync()
-        {
-            try
-            {
-                // Des login!
-                //await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
-                // Verification.
-                if (User.Identity.IsAuthenticated)
-                {
-                    // Home Page.
-                    return RedirectToPage("/Index");
-                }
-            }
-            catch (Exception ex)
-            {
-                // Info
-                Console.Write(ex);
-            }
-
-            // Info.
-            return Page();
-        }
         public async Task<IActionResult> OnPostAsync()
         {
             try
@@ -56,17 +41,17 @@ namespace PortalFacturas.Pages
                 {
                     //await SignInUser(UserName, false);
                     // Verification.
-                    if (User.Identity.IsAuthenticated)
-                    {
-                        // Home Page.
-                        return RedirectToPage("/Index");
-                    }
+                    //if (User.Identity.IsAuthenticated)
+                    //{
+                    //    // Home Page.
+                    //    return RedirectToPage("/Index");
+                    //}
 
                     if (await apiCenService.GetAccessTokenAsync(UserName, Password) != null)
                     {
                         // Login In.
                         TempData["UserName"] = UserName;
-                        await SetAuthCookieAsync();
+                        //await SetAuthCookieAsync();
                         return RedirectToPage("/Buscador");
                     }
 
@@ -92,11 +77,9 @@ namespace PortalFacturas.Pages
             };
             ClaimsIdentity identity = new(claims, "appcookie");
             ClaimsPrincipal claimsPrincipal = new(identity);
-
-            User.AddIdentity(identity);
             await HttpContext.SignInAsync("appcookie", claimsPrincipal, new AuthenticationProperties
             {
-                IsPersistent = false
+                IsPersistent = Recordar
                 //ExpiresUtc = DateTime.Now
             });
         }
