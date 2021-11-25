@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-using PortalFacturas.Interfaces;
+using PortalFacturas.Services;
 
 using System;
 using System.Collections.Generic;
@@ -40,7 +40,9 @@ namespace PortalFacturas.Pages
             {
                 if (ModelState.IsValid)
                 {
-                    if (await apiCenService.GetAccessTokenAsync(UserName, Password) != null)
+                    // Token debería ser guardado en variable cookie? !!!!!!!!!!!!!!
+                    string token = await apiCenService.GetAccessTokenAsync(UserName, Password);
+                    if (!string.IsNullOrEmpty(token))
                     {
                         // Login In.
                         TempData["UserName"] = UserName;

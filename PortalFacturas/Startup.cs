@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-using PortalFacturas.Interfaces;
 using PortalFacturas.Models;
 using PortalFacturas.Services;
 
@@ -28,15 +27,29 @@ namespace PortalFacturas
         {
             _services = services;
             services.AddRazorPages();
+            // Cliente Cen
             services.AddHttpClient<IApiCenService, ApiCenService>(c =>
             {
-                c.BaseAddress = new Uri(Configuration.GetConnectionString("EndPointCen") ?? "");
+                c.BaseAddress = new Uri(Configuration.GetConnectionString("EndPointApiCen") ?? "");
             });
-
+            // Cliente Sharepoint
             services.AddHttpClient<ISharePointService, SharePointService>(c =>
             {
                 c.BaseAddress = new Uri(Configuration.GetConnectionString("EndPointOtro") ?? "");
             });
+            // Cliente Function Azure
+            services.AddHttpClient<IXslMapperFunctionService, XslMapperFunctionService>(c =>
+            {
+                c.BaseAddress = new Uri(Configuration.GetConnectionString("EndPointFunction") ?? "");
+            });
+
+            // Cliente Restack.IO
+            services.AddHttpClient<IConvertToPdfService, ConvertToPdfService>(c =>
+            {
+                c.BaseAddress = new Uri(Configuration.GetConnectionString("EndPointApiConvertToPdf") ?? "");
+            });
+
+
 
 
             services.AddSingleton(options);

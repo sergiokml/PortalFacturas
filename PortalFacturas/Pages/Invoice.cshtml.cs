@@ -2,8 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-using PortalFacturas.Interfaces;
-using PortalFacturas.Models;
+using PortalFacturas.Services;
 
 using System;
 using System.IO;
@@ -15,6 +14,8 @@ namespace PortalFacturas.Pages
     public class InvoiceModel : PageModel
     {
         private readonly IApiCenService apiCenService;
+        private readonly IXslMapperFunctionService xlstMapperService;
+        private readonly IConvertToPdfService convertToPdfService;
 
         [BindProperty(SupportsGet = true)]
         public int Folio { get; set; }
@@ -22,9 +23,11 @@ namespace PortalFacturas.Pages
         [BindProperty]
         public string Mensaje { get; set; }
 
-        public InvoiceModel(IApiCenService apiCenService)
+        public InvoiceModel(IApiCenService apiCenService, IXslMapperFunctionService xlstMapperService, IConvertToPdfService convertToPdfService)
         {
             this.apiCenService = apiCenService;
+            this.xlstMapperService = xlstMapperService;
+            this.convertToPdfService = convertToPdfService;
         }
 
         //Html
@@ -33,14 +36,10 @@ namespace PortalFacturas.Pages
             try
             {
                 string url = DecodificarUrlAsync(renderpath);
-                string res = await apiCenService.GetXmlFileFromCen(url);
-                ResponseModel responseModel = await apiCenService.UploadToFunctionAzure(res);
-                if (responseModel.Content == null)
-                {
-                    Mensaje = "No se pudo acceder a Azure";
-                    return Page();
-                }
-                byte[] bytes = Encoding.UTF8.GetBytes(responseModel.Content);
+                string res = await apiCenService.ConvertDocument(url);
+                string responseModel = await xlstMapperService.ConvertDocument(res);
+
+                byte[] bytes = Encoding.UTF8.GetBytes(responseModel);
                 MemoryStream memoryStream = new(bytes);
                 return new FileStreamResult(memoryStream, "text/html");
             }
@@ -57,7 +56,7 @@ namespace PortalFacturas.Pages
             try
             {
                 string url = DecodificarUrlAsync(renderpath);
-                byte[] bytes = Encoding.UTF8.GetBytes(await apiCenService.GetXmlFileFromCen(url));
+                byte[] bytes = Encoding.UTF8.GetBytes(await apiCenService.ConvertDocument(url));
                 FileResult fileResult = new FileContentResult(bytes, "application/xml")
                 {
                     FileDownloadName = $"{Folio}.xml"
@@ -77,15 +76,11 @@ namespace PortalFacturas.Pages
             try
             {
                 string url = DecodificarUrlAsync(renderpath);
-                string res = await apiCenService.GetXmlFileFromCen(url);
-                ResponseModel responseModel = await apiCenService.UploadToFunctionAzure(res);
-                if (responseModel.Content == null)
-                {
-                    Mensaje = "No se pudo acceder a Azure";
-                    return Page();
-                }
+                string res = await apiCenService.ConvertDocument(url);
+                string responseModel = await xlstMapperService.ConvertDocument(res);
+
                 //Pdf  
-                byte[] bytes = await apiCenService.ConvertToPdf(responseModel.Content);
+                byte[] bytes = await convertToPdfService.ConvertToPdf(responseModel);
                 FileResult fileResult = new FileContentResult(bytes, "application/pdf")
                 {
                     FileDownloadName = $"{Folio}.pdf"

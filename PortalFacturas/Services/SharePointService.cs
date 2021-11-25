@@ -1,6 +1,4 @@
-﻿
-using PortalFacturas.Interfaces;
-using PortalFacturas.Models;
+﻿using PortalFacturas.Models;
 
 using System;
 using System.Collections.Generic;
@@ -9,14 +7,20 @@ using System.Threading.Tasks;
 
 namespace PortalFacturas.Services
 {
+    public interface ISharePointService
+    {
+        Task<byte[]> DownloadConvertedFileAsync(string path, string fileId, string targetFormat);
+    }
+
+
     public class SharePointService : ISharePointService
     {
         private HttpClient _httpClient;
         public readonly OptionsModel _options;
 
-        public SharePointService(OptionsModel _options, HttpClient httpClient)
+        public SharePointService(OptionsModel _options, HttpClient _httpClient)
         {
-            _httpClient = httpClient;
+            this._httpClient = _httpClient;
             this._options = _options;
         }
 

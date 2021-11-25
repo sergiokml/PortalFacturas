@@ -2,12 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-using PortalFacturas.Interfaces;
 using PortalFacturas.Models;
+using PortalFacturas.Services;
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -17,21 +16,22 @@ namespace PortalFacturas.Pages
     {
         private readonly IApiCenService apiCenService;
 
+
         [BindProperty(SupportsGet = true)]
         public int CurrentPage { get; set; } = 1;
         public int Count { get; set; }
         public int PageSize { get; set; } = 10;
         public int TotalPages => (int)Math.Ceiling(decimal.Divide(Count, PageSize));
 
-        [Required]
+        //[Required]
         [BindProperty(SupportsGet = true)]
-        [Display(Name = "Receptor")]
-        public string ReceptorID { get; set; }
+        //[Display(Name = "Receptor")]
+        public int ReceptorID { get; set; }
 
-        [Required]
+        //[Required]
         [BindProperty(SupportsGet = true)]
-        [Display(Name = "Emisor")]
-        public string EmisorID { get; set; }
+        //[Display(Name = "Emisor")]
+        public int EmisorID { get; set; }
 
         [BindProperty]
         public List<InstructionResult> Instructions { get; set; } = new List<InstructionResult>();
@@ -46,14 +46,14 @@ namespace PortalFacturas.Pages
 
         public string MensajeError { get; set; }
 
-        public BuscadorModel(IApiCenService apiCenService, ISharePointService sharePointService)
+        public BuscadorModel(IApiCenService apiCenService)
         {
             this.apiCenService = apiCenService;
         }
 
         private async Task<List<InstructionResult>> GetPaginatedResult(int currentPage, int pageSize = 10)
         {
-            InstructionModel l = await apiCenService.GetInstructionsAsync(EmisorID, ReceptorID);
+            InstructionModel l = await apiCenService.GetInstructionsAsync(EmisorID.ToString(), ReceptorID.ToString());
             Count = l.Count;
 
             Instructions = l.Results
@@ -79,22 +79,24 @@ namespace PortalFacturas.Pages
         /// <returns></returns>
         public async Task OnPostBuscarAsync()
         {
-            if (ModelState.IsValid)
+            if (ModelState.IsValid && ReceptorID > 0 && EmisorID > 0)
             {
                 try
                 {
-                    EmisorID = ModelState["EmisorID"].AttemptedValue;
-                    ReceptorID = ModelState["ReceptorID"].AttemptedValue;
+                    //EmisorID = ModelState["EmisorID"].AttemptedValue; 
+                    //ReceptorID = ModelState["ReceptorID"].AttemptedValue;
 
                     TempData.Keep("UserName");
                     Instructions = await GetPaginatedResult(CurrentPage, PageSize);
                     await LlenarCombosAsync();
+
                 }
                 catch (Exception ex)
                 {
                     MensajeError = ex.Message;
                 }
             }
+            //return Page();
         }
 
         /// <summary>
