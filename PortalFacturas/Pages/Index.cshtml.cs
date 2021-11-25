@@ -27,6 +27,7 @@ namespace PortalFacturas.Pages
             get;
             set;
         }
+
         public IndexModel(IApiCenService apiCenService)
         {
             this.apiCenService = apiCenService;
@@ -39,14 +40,6 @@ namespace PortalFacturas.Pages
             {
                 if (ModelState.IsValid)
                 {
-                    //await SignInUser(UserName, false);
-                    // Verification.
-                    //if (User.Identity.IsAuthenticated)
-                    //{
-                    //    // Home Page.
-                    //    return RedirectToPage("/Index");
-                    //}
-
                     if (await apiCenService.GetAccessTokenAsync(UserName, Password) != null)
                     {
                         // Login In.
@@ -54,19 +47,13 @@ namespace PortalFacturas.Pages
                         //await SetAuthCookieAsync();
                         return RedirectToPage("/Buscador");
                     }
-
                 }
             }
             catch (Exception ex)
             {
-                // Info
                 Console.Write(ex);
             }
-
-            // Info.
             return Page();
-
-
         }
 
         private async Task SetAuthCookieAsync()

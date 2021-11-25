@@ -46,22 +46,13 @@ namespace PortalFacturas.Pages
 
         public string MensajeError { get; set; }
 
-        public BuscadorModel(IApiCenService apiCenService)
+        public BuscadorModel(IApiCenService apiCenService, ISharePointService sharePointService)
         {
             this.apiCenService = apiCenService;
         }
 
         private async Task<List<InstructionResult>> GetPaginatedResult(int currentPage, int pageSize = 10)
         {
-            //if (EmisorID == 0)
-            //{
-            //    throw new ArgumentNullException(nameof(EmisorID));
-            //}
-            //if (string.IsNullOrEmpty(ReceptorID.ToString()))
-            //{
-            //    throw new ArgumentNullException(nameof(ReceptorID));
-            //}
-
             InstructionModel l = await apiCenService.GetInstructionsAsync(EmisorID, ReceptorID);
             Count = l.Count;
 
@@ -90,17 +81,10 @@ namespace PortalFacturas.Pages
         {
             if (ModelState.IsValid)
             {
-
                 try
                 {
-
-
-
                     EmisorID = ModelState["EmisorID"].AttemptedValue;
                     ReceptorID = ModelState["ReceptorID"].AttemptedValue;
-                    //TempData["EmisorID"] = EmisorID;
-                    //TempData["ReceptorID"] = ReceptorID;
-
 
                     TempData.Keep("UserName");
                     Instructions = await GetPaginatedResult(CurrentPage, PageSize);
@@ -109,8 +93,6 @@ namespace PortalFacturas.Pages
                 catch (Exception ex)
                 {
                     MensajeError = ex.Message;
-                    //                    throw new Exception(ex.Message);
-                    //return Page();
                 }
             }
         }
@@ -135,7 +117,6 @@ namespace PortalFacturas.Pages
             UserName = "miguel.buzunariz@enel.com";
             ParticipantReceptor = new SelectList(await apiCenService.GetParticipantsAsync(UserName), nameof(ParticipantResult.Id), nameof(ParticipantResult.Name));
             ParticipantEmisor = new SelectList(await apiCenService.GetParticipantsAsync(), nameof(ParticipantResult.Id), nameof(ParticipantResult.Name));
-
         }
     }
 }

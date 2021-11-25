@@ -1,6 +1,4 @@
-﻿
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Http;
 
 using PortalFacturas.Interfaces;
 using PortalFacturas.Models;
@@ -23,11 +21,11 @@ namespace PortalFacturas.Services
         //private readonly JsonSerializerOptions jsonSerializerOptions;
         private readonly OptionsModel options;
 
-        public IConfiguration Configuration { get; }
+        //public IConfiguration Configuration { get; }
 
-        public ApiCenService(HttpClient httpClient, IConfiguration configuration, OptionsModel options)
+        public ApiCenService(HttpClient httpClient, OptionsModel options)
         {
-            Configuration = configuration;
+            //Configuration = configuration;
             this.httpClient = httpClient;
             this.options = options;
 
@@ -90,7 +88,7 @@ namespace PortalFacturas.Services
             return list;
         }
 
-        public async Task<string> GetXmlFile(string filepath)
+        public async Task<string> GetXmlFileFromCen(string filepath)
         {
             HttpResponseMessage httpResponseMessage = await httpClient.GetAsync(filepath);
             if (!httpResponseMessage.IsSuccessStatusCode)

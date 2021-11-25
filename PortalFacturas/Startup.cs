@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -7,7 +6,6 @@ using Microsoft.Extensions.Hosting;
 
 using PortalFacturas.Interfaces;
 using PortalFacturas.Models;
-using PortalFacturas.Pages;
 using PortalFacturas.Services;
 
 using System;
@@ -19,6 +17,7 @@ namespace PortalFacturas
         public OptionsModel options = new OptionsModel();
 
         public IConfiguration Configuration { get; }
+        public IServiceCollection _services { get; set; }
 
         public Startup(IConfiguration configuration)
         {
@@ -27,26 +26,48 @@ namespace PortalFacturas
 
         public void ConfigureServices(IServiceCollection services)
         {
+            _services = services;
             services.AddRazorPages();
             services.AddHttpClient<IApiCenService, ApiCenService>(c =>
             {
                 c.BaseAddress = new Uri(Configuration.GetConnectionString("EndPointCen") ?? "");
             });
+
+            services.AddHttpClient<ISharePointService, SharePointService>(c =>
+            {
+                c.BaseAddress = new Uri(Configuration.GetConnectionString("EndPointOtro") ?? "");
+            });
+
+
             services.AddSingleton(options);
-            services.AddSingleton<IndexModel>();
+            //services.AddSingleton<IndexModel>();
             services.AddHttpContextAccessor();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            Configuration.Bind("Values", options);
             if (env.IsDevelopment())
             {
-                Configuration.Bind("AppOptionsLocal", options);
+                // SharePoint
+                //_services.AddOptions<OptionsModel>().Configure<IConfiguration>((setttings, configuration) =>
+                //{
+                //    configuration.Bind(setttings); // From host.json              
+                //    setttings.UrlFunction = "http://localhost:7071/api/mappers/xml/xml";
+                //    //http://xslmapperfunction.azurewebsites.net/api/mappers/xml/xml
+                //});
+                //Configuration.Bind("Values", options);
+                options.UrlFunction = "http://localhost:7071/api/mappers/xml/xml";
                 app.UseDeveloperExceptionPage();
             }
             else
             {
-                Configuration.Bind("AppOptionsProd", options);
+                //// SharePoint
+                //_services.AddOptions<OptionsModel>().Configure<IConfiguration>((setttings, configuration) =>
+                //{
+                //    configuration.Bind(setttings); // From host.json              
+                //});
+
                 app.UseHsts();
             }
             app.UseHttpsRedirection();

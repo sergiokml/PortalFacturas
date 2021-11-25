@@ -33,7 +33,7 @@ namespace PortalFacturas.Pages
             try
             {
                 string url = DecodificarUrlAsync(renderpath);
-                string res = await apiCenService.GetXmlFile(url);
+                string res = await apiCenService.GetXmlFileFromCen(url);
                 ResponseModel responseModel = await apiCenService.UploadToFunctionAzure(res);
                 if (responseModel.Content == null)
                 {
@@ -57,7 +57,7 @@ namespace PortalFacturas.Pages
             try
             {
                 string url = DecodificarUrlAsync(renderpath);
-                byte[] bytes = Encoding.UTF8.GetBytes(await apiCenService.GetXmlFile(url));
+                byte[] bytes = Encoding.UTF8.GetBytes(await apiCenService.GetXmlFileFromCen(url));
                 FileResult fileResult = new FileContentResult(bytes, "application/xml")
                 {
                     FileDownloadName = $"{Folio}.xml"
@@ -77,7 +77,7 @@ namespace PortalFacturas.Pages
             try
             {
                 string url = DecodificarUrlAsync(renderpath);
-                string res = await apiCenService.GetXmlFile(url);
+                string res = await apiCenService.GetXmlFileFromCen(url);
                 ResponseModel responseModel = await apiCenService.UploadToFunctionAzure(res);
                 if (responseModel.Content == null)
                 {
