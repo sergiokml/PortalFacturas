@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 
 using PortalFacturas.Models;
 
@@ -30,11 +31,11 @@ namespace PortalFacturas.Services
 
         //public IConfiguration Configuration { get; }
 
-        public ApiCenService(HttpClient httpClient, OptionsModel options)
+        public ApiCenService(HttpClient httpClient, IOptions<OptionsModel> options)
         {
             //Configuration = configuration;
             this.httpClient = httpClient;
-            this.options = options;
+            this.options = options.Value;
 
             //jsonSerializerOptions = new JsonSerializerOptions
             //{
@@ -74,7 +75,7 @@ namespace PortalFacturas.Services
             string url;
             if (username == null)
             {
-                url = "v1/resources/agents/?email=" + options.UserName;
+                url = "v1/resources/agents/?email=" + options.EmailEmisor;
             }
             else
             {

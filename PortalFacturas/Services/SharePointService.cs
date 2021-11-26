@@ -1,4 +1,6 @@
-﻿using PortalFacturas.Models;
+﻿using Microsoft.Extensions.Options;
+
+using PortalFacturas.Models;
 
 using System;
 using System.Collections.Generic;
@@ -18,7 +20,7 @@ namespace PortalFacturas.Services
         private HttpClient _httpClient;
         public readonly OptionsModel _options;
 
-        public SharePointService(OptionsModel _options, HttpClient _httpClient)
+        public SharePointService(OptionsModel _options, HttpClient _httpClient, IOptions<OptionsModel> options)
         {
             this._httpClient = _httpClient;
             this._options = _options;

@@ -15,45 +15,43 @@ namespace PortalFacturas
     {
         public OptionsModel options = new OptionsModel();
 
-        public IConfiguration Configuration { get; }
-        public IServiceCollection _services { get; set; }
+        private readonly IConfiguration configuration;
 
-        private IWebHostEnvironment CurrentEnvironment { get; set; }
+        private readonly IWebHostEnvironment currentEnvironmen;
 
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
-            Configuration = configuration;
-            CurrentEnvironment = env;
+            this.configuration = configuration;
+            currentEnvironmen = env;
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
-            _services = services;
             services.AddRazorPages();
             // Cliente Cen
             services.AddHttpClient<IApiCenService, ApiCenService>(c =>
             {
-                c.BaseAddress = new Uri(Configuration.GetConnectionString("EndPointApiCen") ?? "");
+                c.BaseAddress = new Uri(configuration.GetConnectionString("EndPointApiCen") ?? "");
             });
             // Cliente Sharepoint
             services.AddHttpClient<ISharePointService, SharePointService>(c =>
             {
-                c.BaseAddress = new Uri(Configuration.GetConnectionString("EndPointOtro") ?? "");
+                c.BaseAddress = new Uri(configuration.GetConnectionString("EndPointOtro") ?? "");
             });
-            if (CurrentEnvironment.IsDevelopment())
+            if (currentEnvironmen.IsDevelopment())
             {
                 // Cliente Function Azure
                 services.AddHttpClient<IXslMapperFunctionService, XslMapperFunctionService>(c =>
                 {
-                    c.BaseAddress = new Uri(Configuration.GetConnectionString("EndPointFunctionDev") ?? "");
+                    c.BaseAddress = new Uri(configuration.GetConnectionString("EndPointFunctionDev") ?? "");
                 });
             }
             else
             {
                 // Cliente Function Azure
-                _services.AddHttpClient<IXslMapperFunctionService, XslMapperFunctionService>(c =>
+                services.AddHttpClient<IXslMapperFunctionService, XslMapperFunctionService>(c =>
                 {
-                    c.BaseAddress = new Uri(Configuration.GetConnectionString("EndPointFunctionProd") ?? "");
+                    c.BaseAddress = new Uri(configuration.GetConnectionString("EndPointFunctionProd") ?? "");
                 });
             }
 
@@ -61,36 +59,29 @@ namespace PortalFacturas
             // Cliente Restack.IO
             services.AddHttpClient<IConvertToPdfService, ConvertToPdfService>(c =>
             {
-                c.BaseAddress = new Uri(Configuration.GetConnectionString("EndPointApiConvertToPdf") ?? "");
+                c.BaseAddress = new Uri(configuration.GetConnectionString("EndPointApiConvertToPdf") ?? "");
             });
 
+            services.Configure<OptionsModel>(configuration);
+
+            //Bind
+            //configuration.Bind("Values", options);
 
             services.AddSession();
 
-            services.AddSingleton(options);
+            //services.AddSingleton<OptionsModel>();
             //services.AddSingleton<IndexModel>();
             services.AddHttpContextAccessor();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            Configuration.Bind("Values", options);
             if (env.IsDevelopment())
             {
-                // Cliente Function Azure
-                //_services.AddHttpClient<IXslMapperFunctionService, XslMapperFunctionService>(c =>
-                //{
-                //    c.BaseAddress = new Uri(Configuration.GetConnectionString("EndPointFunctionDev") ?? "");
-                //});
                 app.UseDeveloperExceptionPage();
             }
             else
             {
-                // Cliente Function Azure
-                //_services.AddHttpClient<IXslMapperFunctionService, XslMapperFunctionService>(c =>
-                //{
-                //    c.BaseAddress = new Uri(Configuration.GetConnectionString("EndPointFunctionProd") ?? "");
-                //});
                 app.UseHsts();
             }
 
