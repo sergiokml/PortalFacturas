@@ -28,7 +28,7 @@
 @if (Model.Instructions.Count > 0)
 {
     var path = "";
-
+    //ViewData["Instructions"] = Model.Instructions.ToList();
     <div class="container-fluid table-responsive py-5">
         <table class="table table-sm">
             <thead>
@@ -96,6 +96,9 @@
 
                                     <h7 class="text-center font-weight-bold text-info">No facturado</h7>
 
+                                   @*var fecha = item.AuxiliaryData.PaymentMatrixPublication;
+                                        @String.Format("{0:dd-MM-yyyy}", fecha);*@
+                                    
                                 }
                             }
                         </td>
@@ -103,6 +106,10 @@
                             @{
                                 if (existelink)
                                 { @Html.DisplayFor(modelItem => item.DteResult.Folio) }
+                            else
+                            {
+                                @*<h7 class="text-center text-info">N/F</h7>*@
+                            }
                             }
                         </td>
                         <td>

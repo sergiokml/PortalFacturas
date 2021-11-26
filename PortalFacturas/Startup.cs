@@ -18,9 +18,12 @@ namespace PortalFacturas
         public IConfiguration Configuration { get; }
         public IServiceCollection _services { get; set; }
 
-        public Startup(IConfiguration configuration)
+        private IWebHostEnvironment CurrentEnvironment { get; set; }
+
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
+            CurrentEnvironment = env;
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -37,11 +40,23 @@ namespace PortalFacturas
             {
                 c.BaseAddress = new Uri(Configuration.GetConnectionString("EndPointOtro") ?? "");
             });
-            // Cliente Function Azure
-            services.AddHttpClient<IXslMapperFunctionService, XslMapperFunctionService>(c =>
+            if (CurrentEnvironment.IsDevelopment())
             {
-                c.BaseAddress = new Uri(Configuration.GetConnectionString("EndPointFunction") ?? "");
-            });
+                // Cliente Function Azure
+                services.AddHttpClient<IXslMapperFunctionService, XslMapperFunctionService>(c =>
+                {
+                    c.BaseAddress = new Uri(Configuration.GetConnectionString("EndPointFunctionDev") ?? "");
+                });
+            }
+            else
+            {
+                // Cliente Function Azure
+                _services.AddHttpClient<IXslMapperFunctionService, XslMapperFunctionService>(c =>
+                {
+                    c.BaseAddress = new Uri(Configuration.GetConnectionString("EndPointFunctionProd") ?? "");
+                });
+            }
+
 
             // Cliente Restack.IO
             services.AddHttpClient<IConvertToPdfService, ConvertToPdfService>(c =>
@@ -50,7 +65,7 @@ namespace PortalFacturas
             });
 
 
-
+            services.AddSession();
 
             services.AddSingleton(options);
             //services.AddSingleton<IndexModel>();
@@ -62,27 +77,25 @@ namespace PortalFacturas
             Configuration.Bind("Values", options);
             if (env.IsDevelopment())
             {
-                // SharePoint
-                //_services.AddOptions<OptionsModel>().Configure<IConfiguration>((setttings, configuration) =>
+                // Cliente Function Azure
+                //_services.AddHttpClient<IXslMapperFunctionService, XslMapperFunctionService>(c =>
                 //{
-                //    configuration.Bind(setttings); // From host.json              
-                //    setttings.UrlFunction = "http://localhost:7071/api/mappers/xml/xml";
-                //    //http://xslmapperfunction.azurewebsites.net/api/mappers/xml/xml
+                //    c.BaseAddress = new Uri(Configuration.GetConnectionString("EndPointFunctionDev") ?? "");
                 //});
-                //Configuration.Bind("Values", options);
-                options.UrlFunction = "http://localhost:7071/api/mappers/xml/xml";
                 app.UseDeveloperExceptionPage();
             }
             else
             {
-                //// SharePoint
-                //_services.AddOptions<OptionsModel>().Configure<IConfiguration>((setttings, configuration) =>
+                // Cliente Function Azure
+                //_services.AddHttpClient<IXslMapperFunctionService, XslMapperFunctionService>(c =>
                 //{
-                //    configuration.Bind(setttings); // From host.json              
+                //    c.BaseAddress = new Uri(Configuration.GetConnectionString("EndPointFunctionProd") ?? "");
                 //});
-
                 app.UseHsts();
             }
+
+            app.UseSession();
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();

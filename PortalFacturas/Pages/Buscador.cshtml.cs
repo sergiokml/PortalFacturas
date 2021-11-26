@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
+using PortalFacturas.Helpers;
 using PortalFacturas.Models;
 using PortalFacturas.Services;
 
@@ -19,8 +21,10 @@ namespace PortalFacturas.Pages
 
         [BindProperty(SupportsGet = true)]
         public int CurrentPage { get; set; } = 1;
+
         public int Count { get; set; }
-        public int PageSize { get; set; } = 10;
+
+        public int PageSize { get; set; } = 15;
         public int TotalPages => (int)Math.Ceiling(decimal.Divide(Count, PageSize));
 
         //[Required]
@@ -44,51 +48,66 @@ namespace PortalFacturas.Pages
         public SelectList ParticipantReceptor { get; set; }
 
 
+        public List<ParticipantResult> ParticipantEmisorList { get; set; }
+
+        public List<ParticipantResult> ParticipantReceptorList { get; set; }
+
         public string MensajeError { get; set; }
 
         public BuscadorModel(IApiCenService apiCenService)
         {
             this.apiCenService = apiCenService;
+
+
         }
 
-        private async Task<List<InstructionResult>> GetPaginatedResult(int currentPage, int pageSize = 10)
-        {
-            InstructionModel l = await apiCenService.GetInstructionsAsync(EmisorID.ToString(), ReceptorID.ToString());
-            Count = l.Count;
+        //private async Task GetPaginatedResult(int currentPage, int pageSize = 15, bool isPostBack = false)
+        //{
+        //    List<InstructionResult> sessionList = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
+        //    if (sessionList == null && isPostBack == true)
+        //    {
+        //        InstructionModel l = await apiCenService.GetInstructionsAsync(EmisorID.ToString(), ReceptorID.ToString());
+        //        Count = l.Count;
+        //        await apiCenService.GetDocumentos(l.Results.ToList());
+        //        SessionHelper.SetObjectAsJson(HttpContext.Session, "Instrucciones", l.Results);
+        //        Instructions = l.Results.OrderByDescending((InstructionResult c) => c.AuxiliaryData.PaymentMatrixPublication).ToList().Skip((currentPage - 1) * pageSize).Take(pageSize).ToList();
+        //    }
+        //    else
+        //    {
+        //        List<InstructionResult> lista = sessionList
+        //            .OrderByDescending((InstructionResult c) => c.AuxiliaryData.PaymentMatrixPublication)
+        //            .Skip((currentPage - 1) * pageSize).Take(pageSize).ToList();
+        //        Count = sessionList.Count;
+        //        Instructions = lista;
+        //    }
+        //    //await LlenarCombosAsync(true);
+        //}
 
-            Instructions = l.Results
-                .OrderByDescending((InstructionResult c) => c.AuxiliaryData.PaymentMatrixPublication).ToList();
-            Instructions = Instructions.Skip((currentPage - 1) * pageSize).Take(pageSize).ToList();
-            await apiCenService.GetDocumentos(Instructions);
-            return Instructions;
-        }
-
-        /// <summary>
-        /// Primera carga desde Index
-        /// </summary>
-        /// <returns></returns>
         public async Task OnGetAsync()
         {
-            await LlenarCombosAsync();
             TempData.Keep("UserName");
+            await LlenarCombosAsync();
         }
 
-        /// <summary>
-        /// Botón Principal
-        /// </summary>
-        /// <returns></returns>
         public async Task OnPostBuscarAsync()
         {
-            if (ModelState.IsValid && ReceptorID > 0 && EmisorID > 0)
+            if (ModelState.IsValid)
             {
                 try
                 {
-                    //EmisorID = ModelState["EmisorID"].AttemptedValue; 
-                    //ReceptorID = ModelState["ReceptorID"].AttemptedValue;
-
+                    // Guardar las variables
+                    TempData["EmisorID"] = EmisorID;
+                    TempData["ReceptorID"] = ReceptorID;
+                    TempData.Keep("EmisorID");
+                    TempData.Keep("ReceptorID");
                     TempData.Keep("UserName");
-                    Instructions = await GetPaginatedResult(CurrentPage, PageSize);
-                    await LlenarCombosAsync();
+
+                    //await GetPaginatedResult(CurrentPage, PageSize, true);
+                    InstructionModel l = await apiCenService.GetInstructionsAsync(EmisorID.ToString(), ReceptorID.ToString());
+                    Count = l.Count;
+                    await apiCenService.GetDocumentos(l.Results.ToList());
+                    SessionHelper.SetObjectAsJson(HttpContext.Session, "Instrucciones", l.Results);
+                    Instructions = l.Results.OrderByDescending((InstructionResult c) => c.AuxiliaryData.PaymentMatrixPublication).ToList().Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList();
 
                 }
                 catch (Exception ex)
@@ -96,29 +115,62 @@ namespace PortalFacturas.Pages
                     MensajeError = ex.Message;
                 }
             }
-            //return Page();
+            await LlenarCombosAsync(true);
         }
 
-        /// <summary>
-        /// Botones Html/Xml/Pdf
-        /// </summary>
-        /// <returns></returns>
+
         public async Task OnGetPaginaAsync()
         {
-            if (ModelState.IsValid)
+            if (ModelState.IsValid && TempData["EmisorID"] != null && TempData["ReceptorID"] != null)
             {
-                Instructions = await GetPaginatedResult(CurrentPage, PageSize);
+                EmisorID = (int)TempData["EmisorID"];
+                ReceptorID = (int)TempData["ReceptorID"];
+                //await GetPaginatedResult(CurrentPage, PageSize);
+                List<InstructionResult> sessionList = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
+
+                List<InstructionResult> lista = sessionList
+                    .OrderByDescending((InstructionResult c) => c.AuxiliaryData.PaymentMatrixPublication)
+                    .Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList();
+                Count = sessionList.Count;
+                Instructions = lista;
+
                 TempData.Keep("EmisorID");
                 TempData.Keep("ReceptorID");
-                await LlenarCombosAsync();
+                TempData.Keep("UserName");
+
             }
+            await LlenarCombosAsync(true);
+
         }
 
-        private async Task LlenarCombosAsync()
+        private async Task LlenarCombosAsync(bool isPostBack = false)
         {
-            UserName = "miguel.buzunariz@enel.com";
-            ParticipantReceptor = new SelectList(await apiCenService.GetParticipantsAsync(UserName), nameof(ParticipantResult.Id), nameof(ParticipantResult.Name));
-            ParticipantEmisor = new SelectList(await apiCenService.GetParticipantsAsync(), nameof(ParticipantResult.Id), nameof(ParticipantResult.Name));
+            if (isPostBack)
+            {
+                ParticipantEmisorList = SessionHelper.GetObjectFromJson<List<ParticipantResult>>(HttpContext.Session, "ParticipantEmisor");
+                ParticipantEmisor = new SelectList(ParticipantEmisorList, nameof(ParticipantResult.Id), nameof(ParticipantResult.Name));
+
+
+                ParticipantReceptorList = SessionHelper.GetObjectFromJson<List<ParticipantResult>>(HttpContext.Session, "ParticipantReceptor");
+                ParticipantReceptor = new SelectList(ParticipantReceptorList, nameof(ParticipantResult.Id), nameof(ParticipantResult.Name));
+
+            }
+            else // Falso
+            {
+                UserName = "miguel.buzunariz@enel.com";
+                ParticipantReceptorList = await apiCenService.GetParticipantsAsync(UserName);
+                ParticipantReceptor = new SelectList(ParticipantReceptorList, nameof(ParticipantResult.Id), nameof(ParticipantResult.Name));
+                SessionHelper.SetObjectAsJson(HttpContext.Session, "ParticipantReceptor", ParticipantReceptorList);
+
+
+                ParticipantEmisorList = await apiCenService.GetParticipantsAsync();
+                ParticipantEmisor = new SelectList(ParticipantEmisorList, nameof(ParticipantResult.Id), nameof(ParticipantResult.Name));
+                SessionHelper.SetObjectAsJson(HttpContext.Session, "ParticipantEmisor", ParticipantEmisorList);
+            }
+
+
+
+
         }
     }
 }
