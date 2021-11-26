@@ -13,7 +13,7 @@ namespace PortalFacturas
 {
     public class Startup
     {
-        public OptionsModel options = new OptionsModel();
+        //public OptionsModel options = new OptionsModel();
 
         private readonly IConfiguration configuration;
 
@@ -36,7 +36,7 @@ namespace PortalFacturas
             // Cliente Sharepoint
             services.AddHttpClient<ISharePointService, SharePointService>(c =>
             {
-                c.BaseAddress = new Uri(configuration.GetConnectionString("EndPointOtro") ?? "");
+                c.BaseAddress = new Uri(configuration.GetConnectionString("EndPointSharepoint") ?? "");
             });
             if (currentEnvironmen.IsDevelopment())
             {

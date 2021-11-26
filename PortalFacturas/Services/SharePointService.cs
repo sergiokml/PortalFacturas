@@ -5,48 +5,50 @@ using PortalFacturas.Models;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace PortalFacturas.Services
 {
     public interface ISharePointService
     {
-        Task<byte[]> DownloadConvertedFileAsync(string path, string fileId, string targetFormat);
+        Task<byte[]> DownloadConvertedFileAsync(string fileId, string targetFormat);
     }
 
 
     public class SharePointService : ISharePointService
     {
-        private HttpClient _httpClient;
+        private readonly HttpClient _httpClient;
         public readonly OptionsModel _options;
 
-        public SharePointService(OptionsModel _options, HttpClient _httpClient, IOptions<OptionsModel> options)
+        public SharePointService(HttpClient _httpClient, IOptions<OptionsModel> _options)
         {
             this._httpClient = _httpClient;
-            this._options = _options;
+            this._options = _options.Value;
         }
 
-        private async Task<HttpClient> CreateAuthorizedHttpClient()
+        private async Task CreateAuthorizedHttpClient()
         {
-            if (_httpClient != null)
-            {
-                return _httpClient;
-            }
+            //if (_httpClient != null)
+            //{
+            //    return _httpClient;
+            //}
 
             string token = await GetAccessTokenAsync();
-            _httpClient = new HttpClient();
+            // _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
-            return _httpClient;
+            //return _httpClient;
         }
 
-        public async Task<byte[]> DownloadConvertedFileAsync(string path, string fileId, string targetFormat)
+        public async Task<byte[]> DownloadConvertedFileAsync(string fileId, string targetFormat)
         {
 
-            HttpClient httpClient = await CreateAuthorizedHttpClient();
+            await CreateAuthorizedHttpClient();
 
+            string path = $"{_options.Resource}beta/sites/{_options.SiteId}/drive/items/";
             string requestUrl = $"{path}{fileId}/content?format={targetFormat}";
-            HttpResponseMessage response = await httpClient.GetAsync(requestUrl);
+            HttpResponseMessage response = await _httpClient.GetAsync(requestUrl);
             if (response.IsSuccessStatusCode)
             {
                 byte[] fileContent = await response.Content.ReadAsByteArrayAsync();
@@ -62,7 +64,7 @@ namespace PortalFacturas.Services
 
         private async Task<string> GetAccessTokenAsync()
         {
-            List<KeyValuePair<string, string>> values = new List<KeyValuePair<string, string>>
+            List<KeyValuePair<string, string>> values = new()
             {
                 new KeyValuePair<string, string>("client_id", _options.ClientId),
                 new KeyValuePair<string, string>("client_secret", _options.ClientSecret),
@@ -70,14 +72,20 @@ namespace PortalFacturas.Services
                 new KeyValuePair<string, string>("grant_type", _options.GrantType),
                 new KeyValuePair<string, string>("resource", _options.Resource)
             };
-            string requestUrl = $"{_options.Endpoint}{_options.TenantId}/oauth2/token";
+            string requestUrl = $"{_options.TenantId}/oauth2/token";
             // HttpClient client = new HttpClient();
 
             FormUrlEncodedContent requestContent = new FormUrlEncodedContent(values);
             HttpResponseMessage response = await _httpClient.PostAsync(requestUrl, requestContent);
-            string responseBody = await response.Content.ReadAsStringAsync();
-            dynamic tokenResponse = System.Text.Json.JsonSerializer.Deserialize<string>(responseBody);
-            return tokenResponse?.access_token;
+
+
+
+            //ResponseToken r = await (await _httpClient.PostAsJsonAsync(requestUrl, requestContent))
+            //    .Content.ReadFromJsonAsync<ResponseToken>();
+
+            System.IO.Stream responseBody = await response.Content.ReadAsStreamAsync();
+            dynamic tokenResponse = await JsonSerializer.DeserializeAsync(responseBody, typeof(ResponseToken));
+            return tokenResponse?.AccessToken;
         }
     }
 }

@@ -16,6 +16,8 @@ namespace PortalFacturas.Pages
         private readonly IApiCenService apiCenService;
         private readonly IXslMapperFunctionService xlstMapperService;
         private readonly IConvertToPdfService convertToPdfService;
+        private readonly ISharePointService sharePointService;
+
 
         [BindProperty(SupportsGet = true)]
         public int Folio { get; set; }
@@ -23,11 +25,12 @@ namespace PortalFacturas.Pages
         [BindProperty]
         public string Mensaje { get; set; }
 
-        public InvoiceModel(IApiCenService apiCenService, IXslMapperFunctionService xlstMapperService, IConvertToPdfService convertToPdfService)
+        public InvoiceModel(IApiCenService apiCenService, IXslMapperFunctionService xlstMapperService, IConvertToPdfService convertToPdfService, ISharePointService sharePointService)
         {
             this.apiCenService = apiCenService;
             this.xlstMapperService = xlstMapperService;
             this.convertToPdfService = convertToPdfService;
+            this.sharePointService = sharePointService;
         }
 
         //Html
@@ -35,12 +38,20 @@ namespace PortalFacturas.Pages
         {
             try
             {
-                string url = DecodificarUrlAsync(renderpath);
-                string res = await apiCenService.ConvertDocument(url);
-                string responseModel = await xlstMapperService.ConvertDocument(res);
+                // Test
+                renderpath = "6741.xml";
 
-                byte[] bytes = Encoding.UTF8.GetBytes(responseModel);
-                MemoryStream memoryStream = new(bytes);
+
+                byte[] x = await sharePointService.DownloadConvertedFileAsync("01TPAHJKQLYYVAQQWNAZCJUDY4H2K2AQ73", "html");
+
+                // y si inserto el ID en alguna tabla de DTE de softland y luego voy ahí a buscar el dato...?
+
+                //string url = DecodificarUrlAsync(renderpath);
+                //string res = await apiCenService.ConvertDocument(url);
+                //string responseModel = await xlstMapperService.ConvertDocument(res);
+
+                // byte[] bytes = Encoding.UTF8.GetBytes(responseModel);
+                MemoryStream memoryStream = new(x);
                 return new FileStreamResult(memoryStream, "text/html");
             }
             catch (Exception ex)
