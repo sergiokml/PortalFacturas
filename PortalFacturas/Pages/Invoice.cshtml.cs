@@ -41,10 +41,7 @@ namespace PortalFacturas.Pages
                 // Test
                 renderpath = "6741.xml";
 
-
                 byte[] x = await sharePointService.DownloadConvertedFileAsync("01TPAHJKQLYYVAQQWNAZCJUDY4H2K2AQ73", "html");
-
-                // y si inserto el ID en alguna tabla de DTE de softland y luego voy ahí a buscar el dato...?
 
                 //string url = DecodificarUrlAsync(renderpath);
                 //string res = await apiCenService.ConvertDocument(url);

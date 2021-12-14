@@ -89,6 +89,26 @@ namespace PortalFacturas.Pages
             await LlenarCombosAsync();
         }
 
+
+        public PartialViewResult OnGetCarPartial(int folio)
+        {
+            List<InstructionResult> sessionList = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
+
+            List<InstructionResult> lista = sessionList
+                .OrderByDescending((InstructionResult c) => c.AuxiliaryData.PaymentMatrixPublication)
+                .Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList();
+            Count = sessionList.Count;
+            Instructions = lista.FindAll(c => c.DteResult.Folio == folio);
+            //            Cars = _carService.GetAll();
+            //return new PartialViewResult
+            //{
+            //                ViewName = "_CarPartial",
+            //                ViewData = new ViewDataDictionary<List<Car>>(ViewData, Cars)
+            //            };
+            return new PartialViewResult();
+        }
+
+
         public async Task OnPostBuscarAsync()
         {
             if (ModelState.IsValid)
