@@ -1,4 +1,4 @@
-﻿@page
+﻿@page 
 
 @model PortalFacturas.Pages.BuscadorModel
 @{
@@ -26,14 +26,16 @@
     <hr>
     <div class="row justify-content-md-center">
         <div class="col-md-auto" id="grid">
-            @*<form action="post" data-ajax="true" data-ajax-method="post" data-ajax-complete="completed">*@
+            <form method="post">
                 <div class="input-group">
-                    <input type="text" class="form-control">
+                    <input type="text" class="form-control" asp-for="Folio">
                     <div class="input-group-append">
-                    <button asp-for="folio" id="load" type="submit" class="btn btn-primary mb-2">Folio</button>
+
+                      <button class="btn btn-primary mb-2" type="submit" asp-page-handler="CarPartial">Folio</button>
+
                     </div>
                 </div>
-            @*</form>*@
+            </form>
         </div>
     </div>
 
@@ -179,15 +181,17 @@
     </div>
 }
 @section Scripts {
+   
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial");}   
     
-    @{ <script type="text/javascript">   
+   @* @{ <script type="text/javascript">      
         $(function () {
             $('#load').on('click', function () {
-             $('#grid').load('/Buscador?handler=CarPartial');
+                   var f = $("#folio").val();
+             $('#grid').load('/Buscador?handler=CarPartial','folio=' +f);
             });
         });
-    </script> }
+    </script> }*@
 }
 
 

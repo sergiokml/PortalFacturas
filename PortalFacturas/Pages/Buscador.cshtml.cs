@@ -54,6 +54,9 @@ namespace PortalFacturas.Pages
 
         public string MensajeError { get; set; }
 
+
+        public string Folio { get; set; }
+
         public BuscadorModel(IApiCenService apiCenService)
         {
             this.apiCenService = apiCenService;
@@ -89,23 +92,27 @@ namespace PortalFacturas.Pages
             await LlenarCombosAsync();
         }
 
-
-        public PartialViewResult OnGetCarPartial(int folio)
+        public void OnPostCarPartial(string folio)
         {
             List<InstructionResult> sessionList = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
 
-            List<InstructionResult> lista = sessionList
-                .OrderByDescending((InstructionResult c) => c.AuxiliaryData.PaymentMatrixPublication)
-                .Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList();
             Count = sessionList.Count;
-            Instructions = lista.FindAll(c => c.DteResult.Folio == folio);
+            Instructions.Add(sessionList.FirstOrDefault(c => c.DteResult != null && c.DteResult.Folio == Convert.ToInt32(folio)));
+        }
+
+        public void OnGetCarPartial(string folio)
+        {
+            List<InstructionResult> sessionList = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
+
+            Count = sessionList.Count;
+            Instructions.Add(sessionList.FirstOrDefault(c => c.DteResult != null && c.DteResult.Folio == Convert.ToInt32(folio)));
             //            Cars = _carService.GetAll();
             //return new PartialViewResult
             //{
             //                ViewName = "_CarPartial",
             //                ViewData = new ViewDataDictionary<List<Car>>(ViewData, Cars)
             //            };
-            return new PartialViewResult();
+            // return new PartialViewResult();
         }
 
 
