@@ -54,7 +54,7 @@ namespace PortalFacturas.Pages
 
         public string MensajeError { get; set; }
 
-
+        [BindProperty(SupportsGet = true)]
         public string Folio { get; set; }
 
         public BuscadorModel(IApiCenService apiCenService)
@@ -64,55 +64,53 @@ namespace PortalFacturas.Pages
 
         }
 
-        //private async Task GetPaginatedResult(int currentPage, int pageSize = 15, bool isPostBack = false)
-        //{
-        //    List<InstructionResult> sessionList = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
-        //    if (sessionList == null && isPostBack == true)
-        //    {
-        //        InstructionModel l = await apiCenService.GetInstructionsAsync(EmisorID.ToString(), ReceptorID.ToString());
-        //        Count = l.Count;
-        //        await apiCenService.GetDocumentos(l.Results.ToList());
-        //        SessionHelper.SetObjectAsJson(HttpContext.Session, "Instrucciones", l.Results);
-        //        Instructions = l.Results.OrderByDescending((InstructionResult c) => c.AuxiliaryData.PaymentMatrixPublication).ToList().Skip((currentPage - 1) * pageSize).Take(pageSize).ToList();
-        //    }
-        //    else
-        //    {
-        //        List<InstructionResult> lista = sessionList
-        //            .OrderByDescending((InstructionResult c) => c.AuxiliaryData.PaymentMatrixPublication)
-        //            .Skip((currentPage - 1) * pageSize).Take(pageSize).ToList();
-        //        Count = sessionList.Count;
-        //        Instructions = lista;
-        //    }
-        //    //await LlenarCombosAsync(true);
-        //}
-
         public async Task OnGetAsync()
         {
             TempData.Keep("UserName");
             await LlenarCombosAsync();
         }
 
-        public void OnPostCarPartial(string folio)
+        public async Task OnPostCarPartialAsync()
         {
             List<InstructionResult> sessionList = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
 
-            Count = sessionList.Count;
-            Instructions.Add(sessionList.FirstOrDefault(c => c.DteResult != null && c.DteResult.Folio == Convert.ToInt32(folio)));
+            InstructionResult res = sessionList.FirstOrDefault(c => c.DteResult != null && c.DteResult.Folio == Convert.ToInt32(Folio));
+
+            Count = 1;
+            Instructions.Add(res);
+            //Paginacion();
+            EmisorID = (int)TempData["EmisorID"];
+            ReceptorID = (int)TempData["ReceptorID"];
+            TempData.Keep("EmisorID");
+            TempData.Keep("ReceptorID");
+            TempData.Keep("UserName");
+            await LlenarCombosAsync(true);
         }
 
-        public void OnGetCarPartial(string folio)
+        private void Paginacion()
         {
+            EmisorID = (int)TempData["EmisorID"];
+            ReceptorID = (int)TempData["ReceptorID"];
             List<InstructionResult> sessionList = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
 
+            List<InstructionResult> lista = sessionList
+                .OrderByDescending((InstructionResult c) => c.AuxiliaryData.PaymentMatrixPublication)
+                .Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList();
             Count = sessionList.Count;
-            Instructions.Add(sessionList.FirstOrDefault(c => c.DteResult != null && c.DteResult.Folio == Convert.ToInt32(folio)));
-            //            Cars = _carService.GetAll();
-            //return new PartialViewResult
-            //{
-            //                ViewName = "_CarPartial",
-            //                ViewData = new ViewDataDictionary<List<Car>>(ViewData, Cars)
-            //            };
-            // return new PartialViewResult();
+            Instructions = lista;
+
+            TempData.Keep("EmisorID");
+            TempData.Keep("ReceptorID");
+            TempData.Keep("UserName");
+        }
+
+        public async Task OnGetCarPartialAsync()
+        {
+            if (ModelState.IsValid && TempData["EmisorID"] != null && TempData["ReceptorID"] != null)
+            {
+                Paginacion();
+            }
+            await LlenarCombosAsync(true);
         }
 
 
@@ -129,7 +127,6 @@ namespace PortalFacturas.Pages
                     TempData.Keep("ReceptorID");
                     TempData.Keep("UserName");
 
-                    //await GetPaginatedResult(CurrentPage, PageSize, true);
                     InstructionModel l = await apiCenService.GetInstructionsAsync(EmisorID.ToString(), ReceptorID.ToString());
                     Count = l.Count;
                     await apiCenService.GetDocumentos(l.Results.ToList());
@@ -150,24 +147,9 @@ namespace PortalFacturas.Pages
         {
             if (ModelState.IsValid && TempData["EmisorID"] != null && TempData["ReceptorID"] != null)
             {
-                EmisorID = (int)TempData["EmisorID"];
-                ReceptorID = (int)TempData["ReceptorID"];
-                //await GetPaginatedResult(CurrentPage, PageSize);
-                List<InstructionResult> sessionList = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
-
-                List<InstructionResult> lista = sessionList
-                    .OrderByDescending((InstructionResult c) => c.AuxiliaryData.PaymentMatrixPublication)
-                    .Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList();
-                Count = sessionList.Count;
-                Instructions = lista;
-
-                TempData.Keep("EmisorID");
-                TempData.Keep("ReceptorID");
-                TempData.Keep("UserName");
-
+                Paginacion();
             }
             await LlenarCombosAsync(true);
-
         }
 
         private async Task LlenarCombosAsync(bool isPostBack = false)
