@@ -6,13 +6,10 @@
         <div class="col-md-auto" id="grid">
             <form method="post">
                 <div class="input-group">
-                    <input type="text" class="form-control" asp-for="Folio">
-                     <span asp-validation-for="Folio" class="text-danger"></span>
-
-
+                    <input type="text" class="form-control" asp-for="Folio">    
                     <div class="input-group-append">
         <button class="btn btn-primary mb-2" type="submit" asp-page-handler="BuscarFolio">Folio</button> |
-            <a asp-page="./Buscador?currentpage=1&handler=Pagina" class="bi bi-skip-backward" role="button"></a>
+            <a asp-page="./Buscador?currentpage=1" class="bi bi-skip-backward" asp-page-handler="Pagina"></a>
                     </div>
                 </div>
             </form>

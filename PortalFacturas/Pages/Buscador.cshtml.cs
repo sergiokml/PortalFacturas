@@ -28,12 +28,10 @@ namespace PortalFacturas.Pages
         public int PageSize { get; set; } = 15;
         public int TotalPages => (int)Math.Ceiling(decimal.Divide(Count, PageSize));
 
-        //[Required]
         [BindProperty(SupportsGet = true)]
         [Display(Name = "Receptor del documento")]
         public int ReceptorID { get; set; }
 
-        //[Required]
         [BindProperty(SupportsGet = true)]
         [Display(Name = "Emisor del documento")]
         public int EmisorID { get; set; }
@@ -56,7 +54,6 @@ namespace PortalFacturas.Pages
 
 
         [BindProperty(SupportsGet = true)]
-        //[Display(Name = "Emisor del documento")]
         public string Folio { get; set; }
 
         public BuscadorModel(IApiCenService apiCenService)
@@ -95,11 +92,13 @@ namespace PortalFacturas.Pages
             {
                 Paginacion();
             }
-            //EmisorID = (int)TempData["EmisorID"];
-            //ReceptorID = (int)TempData["ReceptorID"];
-            //TempData.Keep("EmisorID");
-            //TempData.Keep("ReceptorID");
-            //TempData.Keep("UserName");
+            // Necesario!
+            EmisorID = (int)TempData["EmisorID"];
+            ReceptorID = (int)TempData["ReceptorID"];
+            TempData.Keep("EmisorID");
+            TempData.Keep("ReceptorID");
+            TempData.Keep("UserName");
+
             await LlenarCombosAsync(true);
             return Page();
         }

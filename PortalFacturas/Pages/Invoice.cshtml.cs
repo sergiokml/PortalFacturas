@@ -39,9 +39,9 @@ namespace PortalFacturas.Pages
             try
             {
                 // Test
-                renderpath = "6741.xml";
+                //renderpath = "6434.pdf";
 
-                byte[] x = await sharePointService.DownloadConvertedFileAsync("01TPAHJKQLYYVAQQWNAZCJUDY4H2K2AQ73", "html");
+                byte[] x = await sharePointService.DownloadConvertedFileAsync("6434", "pdf");
 
                 //string url = DecodificarUrlAsync(renderpath);
                 //string res = await apiCenService.ConvertDocument(url);
@@ -49,7 +49,7 @@ namespace PortalFacturas.Pages
 
                 // byte[] bytes = Encoding.UTF8.GetBytes(responseModel);
                 MemoryStream memoryStream = new(x);
-                return new FileStreamResult(memoryStream, "text/html");
+                return new FileStreamResult(memoryStream, "text/pdf");
             }
             catch (Exception ex)
             {
