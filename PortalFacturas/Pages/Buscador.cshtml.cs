@@ -81,26 +81,26 @@ namespace PortalFacturas.Pages
                 List<InstructionResult> sessionList = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
 
                 InstructionResult res = sessionList.FirstOrDefault(c => c.DteResult != null && c.DteResult.Folio == Convert.ToInt32(Folio));
-
-                Count = 1;
-                Instructions.Add(res);
-                EmisorID = (int)TempData["EmisorID"];
-                ReceptorID = (int)TempData["ReceptorID"];
-                TempData.Keep("EmisorID");
-                TempData.Keep("ReceptorID");
-                TempData.Keep("UserName");
-                await LlenarCombosAsync(true);
+                if (res == null)
+                {
+                    Paginacion();
+                }
+                else
+                {
+                    Count = 1;
+                    Instructions.Add(res);
+                }
             }
             else
             {
-                EmisorID = (int)TempData["EmisorID"];
-                ReceptorID = (int)TempData["ReceptorID"];
-                TempData.Keep("EmisorID");
-                TempData.Keep("ReceptorID");
-                TempData.Keep("UserName");
-                await LlenarCombosAsync(true);
                 Paginacion();
             }
+            //EmisorID = (int)TempData["EmisorID"];
+            //ReceptorID = (int)TempData["ReceptorID"];
+            //TempData.Keep("EmisorID");
+            //TempData.Keep("ReceptorID");
+            //TempData.Keep("UserName");
+            await LlenarCombosAsync(true);
             return Page();
         }
 
@@ -124,6 +124,7 @@ namespace PortalFacturas.Pages
 
         public async Task OnGetBuscarFolioAsync()
         {
+            //Volver del Buscador Folios
             if (ModelState.IsValid && TempData["EmisorID"] != null && TempData["ReceptorID"] != null)
             {
                 Paginacion();
@@ -174,6 +175,7 @@ namespace PortalFacturas.Pages
 
         public async Task OnGetPaginaAsync()
         {
+            //Páginas de Paginación
             if (ModelState.IsValid && TempData["EmisorID"] != null && TempData["ReceptorID"] != null)
             {
                 Paginacion();
