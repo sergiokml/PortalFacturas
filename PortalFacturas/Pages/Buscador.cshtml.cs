@@ -9,6 +9,7 @@ using PortalFacturas.Services;
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -29,12 +30,12 @@ namespace PortalFacturas.Pages
 
         //[Required]
         [BindProperty(SupportsGet = true)]
-        //[Display(Name = "Receptor")]
+        [Display(Name = "Receptor del documento")]
         public int ReceptorID { get; set; }
 
         //[Required]
         [BindProperty(SupportsGet = true)]
-        //[Display(Name = "Emisor")]
+        [Display(Name = "Emisor del documento")]
         public int EmisorID { get; set; }
 
         [BindProperty]
@@ -47,14 +48,15 @@ namespace PortalFacturas.Pages
 
         public SelectList ParticipantReceptor { get; set; }
 
-
         public List<ParticipantResult> ParticipantEmisorList { get; set; }
 
         public List<ParticipantResult> ParticipantReceptorList { get; set; }
 
         public string MensajeError { get; set; }
 
+
         [BindProperty(SupportsGet = true)]
+        //[Display(Name = "Emisor del documento")]
         public string Folio { get; set; }
 
         public BuscadorModel(IApiCenService apiCenService)
@@ -66,26 +68,42 @@ namespace PortalFacturas.Pages
 
         public async Task OnGetAsync()
         {
+            //Primera carga de la página
             TempData.Keep("UserName");
             await LlenarCombosAsync();
         }
 
-        public async Task OnPostCarPartialAsync()
+        public async Task<IActionResult> OnPostBuscarFolioAsync()
         {
-            List<InstructionResult> sessionList = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
+            //Buscar Folio       
+            if (ModelState.IsValid && !string.IsNullOrEmpty(Folio))
+            {
+                List<InstructionResult> sessionList = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
 
-            InstructionResult res = sessionList.FirstOrDefault(c => c.DteResult != null && c.DteResult.Folio == Convert.ToInt32(Folio));
+                InstructionResult res = sessionList.FirstOrDefault(c => c.DteResult != null && c.DteResult.Folio == Convert.ToInt32(Folio));
 
-            Count = 1;
-            Instructions.Add(res);
-            //Paginacion();
-            EmisorID = (int)TempData["EmisorID"];
-            ReceptorID = (int)TempData["ReceptorID"];
-            TempData.Keep("EmisorID");
-            TempData.Keep("ReceptorID");
-            TempData.Keep("UserName");
-            await LlenarCombosAsync(true);
+                Count = 1;
+                Instructions.Add(res);
+                EmisorID = (int)TempData["EmisorID"];
+                ReceptorID = (int)TempData["ReceptorID"];
+                TempData.Keep("EmisorID");
+                TempData.Keep("ReceptorID");
+                TempData.Keep("UserName");
+                await LlenarCombosAsync(true);
+            }
+            else
+            {
+                EmisorID = (int)TempData["EmisorID"];
+                ReceptorID = (int)TempData["ReceptorID"];
+                TempData.Keep("EmisorID");
+                TempData.Keep("ReceptorID");
+                TempData.Keep("UserName");
+                await LlenarCombosAsync(true);
+                Paginacion();
+            }
+            return Page();
         }
+
 
         private void Paginacion()
         {
@@ -104,7 +122,7 @@ namespace PortalFacturas.Pages
             TempData.Keep("UserName");
         }
 
-        public async Task OnGetCarPartialAsync()
+        public async Task OnGetBuscarFolioAsync()
         {
             if (ModelState.IsValid && TempData["EmisorID"] != null && TempData["ReceptorID"] != null)
             {
@@ -113,9 +131,20 @@ namespace PortalFacturas.Pages
             await LlenarCombosAsync(true);
         }
 
+        //public async Task<IActionResult> OnGetCarPartialAsync()
+        //{
+        //    if (ModelState.IsValid && TempData["EmisorID"] != null && TempData["ReceptorID"] != null)
+        //    {
+        //        return Partial("_PartialBusqueda");
+        //    }
+        //    await LlenarCombosAsync(true);
+        //    return Page();
+        //}
+
 
         public async Task OnPostBuscarAsync()
         {
+            //Buscador principal
             if (ModelState.IsValid)
             {
                 try

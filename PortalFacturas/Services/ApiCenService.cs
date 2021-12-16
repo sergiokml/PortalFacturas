@@ -93,7 +93,7 @@ namespace PortalFacturas.Services
                 return list;
             }).ToList();
             await Task.WhenAll(tareas);
-            return list;
+            return list.OrderBy(c => c.Id).ToList();
         }
 
         public async Task<string> ConvertDocument(string filepath)
