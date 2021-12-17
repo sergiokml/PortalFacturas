@@ -123,7 +123,5 @@ namespace PortalFacturas.Services
                 }).ToList();
             await Task.WhenAll(tareas);
         }
-
-
     }
 }

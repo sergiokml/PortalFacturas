@@ -12,7 +12,7 @@ namespace PortalFacturas.Services
 {
     public interface ISharePointService
     {
-        Task<byte[]> DownloadConvertedFileAsync(string fileId, string targetFormat);
+        Task<byte[]> DownloadConvertedFileAsync(string fileId);
     }
 
 
@@ -41,13 +41,13 @@ namespace PortalFacturas.Services
             //return _httpClient;
         }
 
-        public async Task<byte[]> DownloadConvertedFileAsync(string fileId, string targetFormat)
+        public async Task<byte[]> DownloadConvertedFileAsync(string fileId)
         {
 
             await CreateAuthorizedHttpClient();
 
             string path = $"{_options.Resource}beta/sites/{_options.SiteId}/drive/items/";
-            string requestUrl = $"{path}{fileId}/content?format={targetFormat}";
+            string requestUrl = $"{path}{fileId}/content";
             HttpResponseMessage response = await _httpClient.GetAsync(requestUrl);
             if (response.IsSuccessStatusCode)
             {

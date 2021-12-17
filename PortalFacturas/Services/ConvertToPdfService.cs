@@ -35,7 +35,6 @@ namespace PortalFacturas.Services
             HttpRequestMessage request = new()
             {
                 Method = HttpMethod.Post,
-                //RequestUri = new Uri("https://restpack.io/api/html2pdf/v7/convert"),
                 Content = new StringContent(contentt, Encoding.UTF8, "application/json")
             };
             request.Headers.Add("x-access-token", "Tc2ENx8UpsBwERyhmCy42t0hfVCxubU4GCpoXUDQ98q0DfHP");
@@ -44,8 +43,8 @@ namespace PortalFacturas.Services
             {
                 throw new Exception($"No se pudo convertir el documento.(restack.io)");
             }
-            ResponsePdfRestPackModel pdf = await response.Content.ReadFromJsonAsync<ResponsePdfRestPackModel>();
-
+            ResponsePdfRestPackModel pdf = await response.Content
+                .ReadFromJsonAsync<ResponsePdfRestPackModel>();
 
             HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync(pdf.Image);
             if (!httpResponseMessage.IsSuccessStatusCode)
@@ -53,7 +52,6 @@ namespace PortalFacturas.Services
                 throw new Exception($"Instrucción facturada, pero no existe el documento en CEN.");
             }
             return await httpResponseMessage.Content.ReadAsByteArrayAsync();
-            //return await GetPdfFile(pdf.Image);
         }
     }
 }

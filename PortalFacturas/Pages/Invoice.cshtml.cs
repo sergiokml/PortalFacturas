@@ -2,10 +2,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
+using PortalFacturas.Helpers;
+using PortalFacturas.Models;
 using PortalFacturas.Services;
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -34,22 +38,19 @@ namespace PortalFacturas.Pages
         }
 
         //Html
-        public async Task<ActionResult> OnGetHtmlDocAsync(string renderpath)
+        public async Task<ActionResult> OnGetHtmlDocAsync(int render)
         {
             try
             {
+                List<InstructionResult> ejemplo = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
+                InstructionResult instruction = ejemplo.FirstOrDefault(c => c.Id == render);
                 // Test
-                //renderpath = "6434.pdf";
-
-                byte[] x = await sharePointService.DownloadConvertedFileAsync("6434", "pdf");
-
-                //string url = DecodificarUrlAsync(renderpath);
-                //string res = await apiCenService.ConvertDocument(url);
-                //string responseModel = await xlstMapperService.ConvertDocument(res);
-
-                // byte[] bytes = Encoding.UTF8.GetBytes(responseModel);
-                MemoryStream memoryStream = new(x);
-                return new FileStreamResult(memoryStream, "text/pdf");
+                //var ERP1Emisión = instruction.DteResult.EmissionErpA;
+                string ERP1Emisión = "01TPAHJKURTVNUEHYI5BD2MFDEUX4ZED2F";
+                byte[] bytes = await sharePointService
+                    .DownloadConvertedFileAsync(ERP1Emisión);
+                MemoryStream memoryStream = new(bytes);
+                return new FileStreamResult(memoryStream, "text/html");
             }
             catch (Exception ex)
             {
@@ -59,15 +60,21 @@ namespace PortalFacturas.Pages
         }
 
         //XmlDoc
-        public async Task<ActionResult> OnGetXmlDocAsync(string renderpath)
+        public async Task<ActionResult> OnGetXmlDocAsync(int render)
         {
             try
             {
-                string url = DecodificarUrlAsync(renderpath);
-                byte[] bytes = Encoding.UTF8.GetBytes(await apiCenService.ConvertDocument(url));
+                List<InstructionResult> ejemplo = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
+                InstructionResult instruction = ejemplo.FirstOrDefault(c => c.Id == render);
+
+                // Tester
+                //var ERP1Emisión = instruction.DteResult.EmissionErpA;
+                string ERP1Emisión = "01TPAHJKTBPGWPNNUUDFGYFYEAX5Q34E37";
+                byte[] bytes = await sharePointService
+                    .DownloadConvertedFileAsync(ERP1Emisión);
                 FileResult fileResult = new FileContentResult(bytes, "application/xml")
                 {
-                    FileDownloadName = $"{Folio}.xml"
+                    FileDownloadName = $"{instruction.DteResult.Folio}.xml"
                 };
                 return fileResult;
             }
@@ -79,19 +86,27 @@ namespace PortalFacturas.Pages
         }
 
 
-        public async Task<ActionResult> OnGetPdfDocAsync(string renderpath)
+        public async Task<ActionResult> OnGetPdfDocAsync(int render)
         {
             try
             {
-                string url = DecodificarUrlAsync(renderpath);
-                string res = await apiCenService.ConvertDocument(url);
-                string responseModel = await xlstMapperService.ConvertDocument(res);
+                List<InstructionResult> ejemplo = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
+                InstructionResult instruction = ejemplo.FirstOrDefault(c => c.Id == render);
+
+                // Test
+                //var ERP1Emisión = instruction.DteResult.EmissionErpA;
+                string ERP1Emisión = "01TPAHJKURTVNUEHYI5BD2MFDEUX4ZED2F";
+                //Html
+                byte[] doc = await sharePointService
+                    .DownloadConvertedFileAsync(ERP1Emisión);
 
                 //Pdf  
-                byte[] bytes = await convertToPdfService.ConvertToPdf(responseModel);
+                byte[] bytes = await convertToPdfService
+                    .ConvertToPdf(Encoding.UTF8.GetString(doc));
+
                 FileResult fileResult = new FileContentResult(bytes, "application/pdf")
                 {
-                    FileDownloadName = $"{Folio}.pdf"
+                    FileDownloadName = $"{instruction.DteResult.Folio}.pdf"
                 };
                 return fileResult;
             }

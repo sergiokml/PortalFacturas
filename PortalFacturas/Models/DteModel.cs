@@ -37,7 +37,7 @@ namespace PortalFacturas.Models
         public string EmissionFile { get; set; }
 
         [JsonPropertyName("emission_erp_a")]
-        public object EmissionErpA { get; set; }
+        public string EmissionErpA { get; set; }
 
         [JsonPropertyName("emission_erp_b")]
         public object EmissionErpB { get; set; }
