@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -11,10 +12,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace PortalFacturas.Pages
 {
+    [Authorize]
     public class BuscadorModel : PageModel
     {
         private readonly IApiCenService apiCenService;
@@ -63,11 +66,17 @@ namespace PortalFacturas.Pages
 
         }
 
+
+
         public async Task OnGetAsync()
         {
             //Primera carga de la página
-            TempData.Keep("UserName");
-            await LlenarCombosAsync();
+            if (User.Identity.IsAuthenticated)
+            {
+                //TempData.Keep("UserName");
+                await LlenarCombosAsync();
+            }
+
         }
 
         public async Task<IActionResult> OnPostBuscarFolioAsync()
@@ -97,13 +106,13 @@ namespace PortalFacturas.Pages
             ReceptorID = (int)TempData["ReceptorID"];
             TempData.Keep("EmisorID");
             TempData.Keep("ReceptorID");
-            TempData.Keep("UserName");
+            //TempData.Keep("UserName");
 
             await LlenarCombosAsync(true);
             return Page();
         }
 
-
+        [Authorize]
         private void Paginacion()
         {
             EmisorID = (int)TempData["EmisorID"];
@@ -118,7 +127,7 @@ namespace PortalFacturas.Pages
 
             TempData.Keep("EmisorID");
             TempData.Keep("ReceptorID");
-            TempData.Keep("UserName");
+            //TempData.Keep("UserName");
         }
 
         public async Task OnGetBuscarFolioAsync()
@@ -154,7 +163,7 @@ namespace PortalFacturas.Pages
                     TempData["ReceptorID"] = ReceptorID;
                     TempData.Keep("EmisorID");
                     TempData.Keep("ReceptorID");
-                    TempData.Keep("UserName");
+                    //  TempData.Keep("UserName");
 
                     InstructionModel l = await apiCenService.GetInstructionsAsync(EmisorID.ToString(), ReceptorID.ToString());
                     Count = l.Count;
@@ -196,8 +205,9 @@ namespace PortalFacturas.Pages
             }
             else // Falso
             {
-                UserName = "miguel.buzunariz@enel.com";
-                ParticipantReceptorList = await apiCenService.GetParticipantsAsync(UserName);
+                //UserName = "miguel.buzunariz@enel.com";
+                string email = User.FindFirstValue(ClaimTypes.Email);
+                ParticipantReceptorList = await apiCenService.GetParticipantsAsync(email);
                 ParticipantReceptor = new SelectList(ParticipantReceptorList, nameof(ParticipantResult.Id), nameof(ParticipantResult.Name));
                 SessionHelper.SetObjectAsJson(HttpContext.Session, "ParticipantReceptor", ParticipantReceptorList);
 

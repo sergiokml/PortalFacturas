@@ -116,13 +116,5 @@ namespace PortalFacturas.Pages
             }
             return Page();
         }
-
-        private static string DecodificarUrlAsync(string renderpath)
-        {
-            byte[] encodedDataAsBytes = Convert.FromBase64String(renderpath);
-            return Encoding.ASCII.GetString(encodedDataAsBytes);
-        }
-
     }
-
 }

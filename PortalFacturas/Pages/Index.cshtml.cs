@@ -15,8 +15,8 @@ namespace PortalFacturas.Pages
     {
         private readonly IApiCenService apiCenService;
 
-        [BindProperty]
-        public string UserName { get; set; }
+        //[BindProperty]
+        //public string UserName { get; set; }
 
         [BindProperty]
         public string Password { get; set; }
@@ -28,13 +28,20 @@ namespace PortalFacturas.Pages
             set;
         }
 
+
+
         public IndexModel(IApiCenService apiCenService)
         {
             this.apiCenService = apiCenService;
         }
 
 
-        public async Task<IActionResult> OnPostAsync()
+        public void OnGet()
+        {
+
+            TempData.Clear();
+        }
+        public async Task<IActionResult> OnPostAsync(string UserName)
         {
             try
             {
@@ -45,31 +52,33 @@ namespace PortalFacturas.Pages
                     if (!string.IsNullOrEmpty(token))
                     {
                         // Login In.
-                        TempData["UserName"] = UserName;
-                        //await SetAuthCookieAsync();
+                        //TempData["UserName"] = UserName;
+                        await SetAuthCookieAsync(UserName);
                         return RedirectToPage("/Buscador");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.Write(ex);
+                throw new Exception(ex.Message);
             }
             return Page();
         }
 
-        private async Task SetAuthCookieAsync()
+
+        private async Task SetAuthCookieAsync(string UserName)
         {
-            List<Claim> claims = new List<Claim> {
-                 new Claim(ClaimTypes.Email, UserName),
-                 new Claim(ClaimTypes.UserData, Password)
+            UserName = "miguel.buzunariz@enel.com";
+            List<Claim> claims = new()
+            {
+                new Claim(ClaimTypes.Email, UserName)
             };
             ClaimsIdentity identity = new(claims, "appcookie");
             ClaimsPrincipal claimsPrincipal = new(identity);
             await HttpContext.SignInAsync("appcookie", claimsPrincipal, new AuthenticationProperties
             {
-                IsPersistent = Recordar
-                //ExpiresUtc = DateTime.Now
+                IsPersistent = Recordar,
+                ExpiresUtc = DateTime.UtcNow.AddMinutes(1) //Dura 1 min
             });
         }
 

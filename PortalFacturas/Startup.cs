@@ -13,10 +13,8 @@ namespace PortalFacturas
 {
     public class Startup
     {
-        //public OptionsModel options = new OptionsModel();
 
         private readonly IConfiguration configuration;
-
         private readonly IWebHostEnvironment currentEnvironmen;
 
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
@@ -64,13 +62,14 @@ namespace PortalFacturas
 
             services.Configure<OptionsModel>(configuration);
 
-            //Bind
-            //configuration.Bind("Values", options);
+
+            services.AddAuthentication("appcookie")
+                .AddCookie("appcookie", options =>
+                {
+                    options.LoginPath = "/Index";
+                });
 
             services.AddSession();
-
-            //services.AddSingleton<OptionsModel>();
-            //services.AddSingleton<IndexModel>();
             services.AddHttpContextAccessor();
         }
 
@@ -90,7 +89,10 @@ namespace PortalFacturas
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
+
+            app.UseAuthentication();
             app.UseAuthorization();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();

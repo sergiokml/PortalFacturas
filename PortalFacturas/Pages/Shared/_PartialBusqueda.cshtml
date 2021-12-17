@@ -17,38 +17,37 @@
     </div>
 
     int path = 0;
-    <div class="container-fluid table-responsive py-5">
+    <div class="container-fluid table-responsive py-5" style="padding-right: 0px;padding-left: 0px;">
         <table class="table table-sm">
             <thead>
                 <tr>
                     @*<th>
                         F. Publicación
                         </th>*@
-                    <th scope="col">
-
-                        F. Emisión
-
+                    <th scope="col" class="text-center">
+                        Fecha Emisión
                     </th>
-                    <th>
+                    <th class="text-center">
                         Folio
                     </th>
-                    <th>
+                    <th class="d-none d-xl-block">
                         Concepto
                     </th>
-                    <th>
+                    <th style="text-align: right;">
                         Neto
                     </th>
-                    <th>
+                    <th style="text-align: right;">
                         Iva
                     </th>
-                    <th>
+                    <th style="text-align: right;">
                         Total
                     </th>
-                    <th>
+                    <th class="text-center">
                     </th>
-                    <th>
+                    <th class="text-center">
                     </th>
-
+                     <th class="text-center">
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -69,7 +68,7 @@
                             @String.Format("{0:dd-MM-yyyy}", fecha);
                             }
                             </td>*@
-                        <td>
+                        <td class="text-center">
 
                             @{
                                 if (existelink)
@@ -77,14 +76,13 @@
                                     var emi = item.DteResult.EmissionDt;
                                     if (item.DteResult.EmissionDt != new DateTime(0001, 01, 01))
                                     {
-                                        @String.Format("{0:dd-MM-yyyy}", emi)
-                                        ;
+                                        @String.Format("{0:dd-MM-yyyy}", emi);
                                     }
                                 }
                                 else
                                 {
 
-                                    <h7 class="text-center font-weight-bold" style="color: #1b6ec2!important;">No facturado</h7>
+                                    <h6 class="font-weight-bold" style="color: #1b6ec2!important;">No facturado</h6>
 
                                     @*var fecha = item.AuxiliaryData.PaymentMatrixPublication;
                                         @String.Format("{0:dd-MM-yyyy}", fecha);*@
@@ -92,7 +90,7 @@
                                 }
                             }
                         </td>
-                        <td>
+                        <td class="text-center">
                             @{
                                 if (existelink)
                                 {
@@ -100,25 +98,25 @@
                                 }
                                 else
                                 {
-                                    @*<h7 class="text-center text-info">N/F</h7>*@
+                                    <h7 class="text-center text-info">-</h7>
                                 }
                             }
                         </td>
-                        <td>
+                        <td class="d-none d-xl-block">
                             @Html.DisplayFor(modelItem => item.AuxiliaryData.PaymentMatrixConcept)
                         </td>
-                        <td>
+                        <td style="text-align: right;">
                             @{
                                 var monto = item.Amount;
                                 @String.Format(System.Globalization.CultureInfo.GetCultureInfo("es-CL"), "{0:C}", monto) }
                         </td>
-                        <td>
+                        <td style="text-align: right;">
                             @{ @String.Format(System.Globalization.CultureInfo.GetCultureInfo("es-CL"), "{0:C}", monto * 0.19) }
                         </td>
-                        <td>
+                        <td style="text-align: right;">
                             @{ @String.Format(System.Globalization.CultureInfo.GetCultureInfo("es-CL"), "{0:C}", monto * 1.19) }
                         </td>
-                        <td>
+                        <td class="text-center">
                             @{
                                 if (existelink)
                                 {
@@ -126,7 +124,7 @@
                                 }
                             }
                         </td>
-                        <td>
+                        <td class="text-center">
                             @{
                                 if (existelink)
                                 {
@@ -134,7 +132,7 @@
                                 }
                             }
                         </td>
-                        <td>
+                        <td class="text-center">
                             @{
                                 if (existelink)
                                 {
