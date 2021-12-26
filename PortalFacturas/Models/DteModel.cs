@@ -40,13 +40,13 @@ namespace PortalFacturas.Models
         public string EmissionErpA { get; set; }
 
         [JsonPropertyName("emission_erp_b")]
-        public object EmissionErpB { get; set; }
+        public string EmissionErpB { get; set; }
 
         [JsonPropertyName("reception_dt")]
         public string ReceptionDt { get; set; }
 
         [JsonPropertyName("reception_erp")]
-        public object ReceptionErp { get; set; }
+        public string ReceptionErp { get; set; }
 
         [JsonPropertyName("acceptance_dt")]
         public string AcceptanceDt { get; set; }

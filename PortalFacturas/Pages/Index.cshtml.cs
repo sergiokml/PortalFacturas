@@ -78,7 +78,7 @@ namespace PortalFacturas.Pages
             await HttpContext.SignInAsync("appcookie", claimsPrincipal, new AuthenticationProperties
             {
                 IsPersistent = Recordar,
-                ExpiresUtc = DateTime.UtcNow.AddMinutes(1) //Dura 1 min
+                ExpiresUtc = DateTime.UtcNow.AddMinutes(30) //Dura 30 min
             });
         }
 

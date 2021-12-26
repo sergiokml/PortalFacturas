@@ -18,12 +18,15 @@
                 @{
                     string email = @User.FindFirstValue(ClaimTypes.Email);
                 }
+                
                 <ul class="navbar-nav ml-auto">
+                     <li class="nav-item">                         
+                          <a class="navbar-brand">@email</a>
+                    </li>                  
                     <li class="nav-item">                         
                         <a class="navbar-brand" asp-area="" asp-page="/LogOut">Salir</a>
                     </li>
                 </ul>
-                <div>@email</div>
             </div>
         </nav>
     </header>

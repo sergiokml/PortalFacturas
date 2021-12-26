@@ -16,8 +16,8 @@
         </div>
     </div>
 
-    int path = 0;
-    <div class="container-fluid table-responsive py-5" style="padding-right: 0px;padding-left: 0px;">
+int path = 0;
+    <div class="container-fluid table-responsive py-5" style="padding-right: 0px;padding-left: 0px;">        
         <table class="table table-sm">
             <thead>
                 <tr>
@@ -46,12 +46,13 @@
                     </th>
                     <th class="text-center">
                     </th>
-                     <th class="text-center">
+                    <th class="text-center">
                     </th>
                 </tr>
             </thead>
+            
             <tbody>
-
+               
                 @foreach (var item in Model.Instructions)
                 {
                     var existelink = false;
@@ -155,6 +156,10 @@
             </ul>
         </div>
     </div>
+}
+else
+{
+   <h6>@ViewData["count"]</h6>   
 }
 
 

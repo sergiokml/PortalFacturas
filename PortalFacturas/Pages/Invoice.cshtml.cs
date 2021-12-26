@@ -44,18 +44,20 @@ namespace PortalFacturas.Pages
             {
                 List<InstructionResult> ejemplo = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
                 InstructionResult instruction = ejemplo.FirstOrDefault(c => c.Id == render);
-                // Test
-                //var ERP1Emisión = instruction.DteResult.EmissionErpA;
-                string ERP1Emisión = "01TPAHJKURTVNUEHYI5BD2MFDEUX4ZED2F";
-                byte[] bytes = await sharePointService
-                    .DownloadConvertedFileAsync(ERP1Emisión);
-                MemoryStream memoryStream = new(bytes);
-                return new FileStreamResult(memoryStream, "text/html");
+                if (instruction.DteResult.EmissionErpA != null)
+                {
+                    string EmissionErpA = instruction.DteResult.EmissionErpA;
+                    byte[] bytes = await sharePointService
+                        .DownloadConvertedFileAsync(EmissionErpA);
+                    MemoryStream memoryStream = new(bytes);
+                    return new FileStreamResult(memoryStream, "text/html");
+                }
             }
             catch (Exception ex)
             {
                 Mensaje = ex.Message;
             }
+            Mensaje = "No existe ID 'EmissionErpA'";
             return Page();
         }
 
@@ -66,22 +68,23 @@ namespace PortalFacturas.Pages
             {
                 List<InstructionResult> ejemplo = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
                 InstructionResult instruction = ejemplo.FirstOrDefault(c => c.Id == render);
-
-                // Tester
-                //var ERP1Emisión = instruction.DteResult.EmissionErpA;
-                string ERP1Emisión = "01TPAHJKTBPGWPNNUUDFGYFYEAX5Q34E37";
-                byte[] bytes = await sharePointService
-                    .DownloadConvertedFileAsync(ERP1Emisión);
-                FileResult fileResult = new FileContentResult(bytes, "application/xml")
+                if (instruction.DteResult.EmissionErpB != null)
                 {
-                    FileDownloadName = $"{instruction.DteResult.Folio}.xml"
-                };
-                return fileResult;
+                    string EmissionErpB = instruction.DteResult.EmissionErpB;
+                    byte[] bytes = await sharePointService
+                        .DownloadConvertedFileAsync(EmissionErpB);
+                    FileResult fileResult = new FileContentResult(bytes, "application/xml")
+                    {
+                        FileDownloadName = $"{instruction.DteResult.Folio}.xml"
+                    };
+                    return fileResult;
+                }
             }
             catch (Exception ex)
             {
                 Mensaje = ex.Message;
             }
+            Mensaje = "No existe ID 'EmissionErpB'";
             return Page();
         }
 
@@ -93,27 +96,25 @@ namespace PortalFacturas.Pages
                 List<InstructionResult> ejemplo = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
                 InstructionResult instruction = ejemplo.FirstOrDefault(c => c.Id == render);
 
-                // Test
-                //var ERP1Emisión = instruction.DteResult.EmissionErpA;
-                string ERP1Emisión = "01TPAHJKURTVNUEHYI5BD2MFDEUX4ZED2F";
-                //Html
-                byte[] doc = await sharePointService
-                    .DownloadConvertedFileAsync(ERP1Emisión);
-
-                //Pdf  
-                byte[] bytes = await convertToPdfService
-                    .ConvertToPdf(Encoding.UTF8.GetString(doc));
-
-                FileResult fileResult = new FileContentResult(bytes, "application/pdf")
+                if (instruction.DteResult.ReceptionErp != null)
                 {
-                    FileDownloadName = $"{instruction.DteResult.Folio}.pdf"
-                };
-                return fileResult;
+                    string ReceptionErp = instruction.DteResult.ReceptionErp;
+                    byte[] doc = await sharePointService
+                        .DownloadConvertedFileAsync(ReceptionErp);
+                    byte[] bytes = await convertToPdfService
+                        .ConvertToPdf(Encoding.UTF8.GetString(doc));
+                    FileResult fileResult = new FileContentResult(bytes, "application/pdf")
+                    {
+                        FileDownloadName = $"{instruction.DteResult.Folio}.pdf"
+                    };
+                    return fileResult;
+                }
             }
             catch (Exception ex)
             {
                 Mensaje = ex.Message;
             }
+            Mensaje = "No existe ID 'ReceptionErp'";
             return Page();
         }
     }
