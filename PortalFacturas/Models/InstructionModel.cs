@@ -81,7 +81,9 @@ namespace PortalFacturas.Models
         [JsonPropertyName("updated_ts")]
         public DateTime UpdatedTs { get; set; }
 
-        public DteResult DteResult { get; set; }
+
+        // Para guardar los DTE
+        public List<DteResult> DteResult { get; set; }
     }
 
     public class InstructionModel

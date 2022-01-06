@@ -51,7 +51,8 @@ namespace PortalFacturas.Services
                 Username = username,
                 Password = password
             };
-            return ((dynamic)(await (await httpClient.PostAsJsonAsync("token-auth/", value)).Content.ReadFromJsonAsync<TokenAuth>()))?.Token;
+
+            return ((dynamic)await (await httpClient.PostAsJsonAsync("token-auth/", value)).Content.ReadFromJsonAsync<TokenCen>())?.Token;
         }
 
         public async Task<InstructionModel> GetInstructionsAsync(string creditor, string debtor)
@@ -87,9 +88,8 @@ namespace PortalFacturas.Services
             tareas = agente.Participants.Select(async m =>
             {
                 string requestUri = $"v1/resources/participants/?id={m.ParticipantID}";
-                IEnumerable<ParticipantResult> ag = (await httpClient
-                .GetFromJsonAsync<ParticipantModel>(requestUri)).Results;
-                list.AddRange(ag);
+                list.AddRange((await httpClient
+                .GetFromJsonAsync<ParticipantModel>(requestUri)).Results);
                 return list;
             }).ToList();
             await Task.WhenAll(tareas);
@@ -118,7 +118,7 @@ namespace PortalFacturas.Services
                     List<DteResult> dteModel = (await httpClient.GetFromJsonAsync<DteModel>(requestUri)).Results.ToList();
                     if (dteModel != null && dteModel.Count > 0)
                     {
-                        m.DteResult = dteModel[0];
+                        m.DteResult = dteModel;
                     }
                 }).ToList();
             await Task.WhenAll(tareas);

@@ -2,7 +2,7 @@
 
 namespace PortalFacturas.Models
 {
-    public class ResponseToken
+    public class TokenSp
     {
         [JsonPropertyName("token_type")]
         public string TokenType { get; set; }
@@ -24,5 +24,11 @@ namespace PortalFacturas.Models
 
         [JsonPropertyName("access_token")]
         public string AccessToken { get; set; }
+    }
+
+    public class TokenCen
+    {
+        [JsonPropertyName("token")]
+        public string Token { get; set; }
     }
 }

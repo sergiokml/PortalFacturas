@@ -36,10 +36,14 @@ namespace PortalFacturas.Pages
         }
 
 
-        public void OnGet()
+        public IActionResult OnGet()
         {
-
+            if (User.Identity.IsAuthenticated)
+            {
+                return RedirectToPage("/Buscador");
+            }
             TempData.Clear();
+            return Page();
         }
         public async Task<IActionResult> OnPostAsync(string UserName)
         {
@@ -68,7 +72,7 @@ namespace PortalFacturas.Pages
 
         private async Task SetAuthCookieAsync(string UserName)
         {
-            UserName = "miguel.buzunariz@enel.com";
+            UserName = "carlosalfredo.mendoza.robles@acciona.com";
             List<Claim> claims = new()
             {
                 new Claim(ClaimTypes.Email, UserName)

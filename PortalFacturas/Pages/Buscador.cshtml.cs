@@ -86,7 +86,7 @@ namespace PortalFacturas.Pages
             {
                 List<InstructionResult> sessionList = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
 
-                InstructionResult res = sessionList.FirstOrDefault(c => c.DteResult != null && c.DteResult.Folio == Convert.ToInt32(Folio));
+                InstructionResult res = sessionList.FirstOrDefault(c => c.DteResult != null && c.DteResult.Any(c => c.Folio == Convert.ToInt32(Folio)));
                 if (res == null)
                 {
                     Paginacion();

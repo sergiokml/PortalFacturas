@@ -43,9 +43,7 @@ namespace PortalFacturas.Services
 
         public async Task<byte[]> DownloadConvertedFileAsync(string fileId)
         {
-
             await CreateAuthorizedHttpClient();
-
             string path = $"{_options.Resource}beta/sites/{_options.SiteId}/drive/items/";
             string requestUrl = $"{path}{fileId}/content";
             HttpResponseMessage response = await _httpClient.GetAsync(requestUrl);
@@ -59,7 +57,6 @@ namespace PortalFacturas.Services
                 string message = await response.Content.ReadAsStringAsync();
                 throw new Exception($"Download of converted file failed with status {response.StatusCode} and message {message}");
             }
-
         }
 
         private async Task<string> GetAccessTokenAsync()
@@ -73,18 +70,10 @@ namespace PortalFacturas.Services
                 new KeyValuePair<string, string>("resource", _options.Resource)
             };
             string requestUrl = $"{_options.TenantId}/oauth2/token";
-            // HttpClient client = new HttpClient();
-
             FormUrlEncodedContent requestContent = new FormUrlEncodedContent(values);
             HttpResponseMessage response = await _httpClient.PostAsync(requestUrl, requestContent);
-
-
-
-            //ResponseToken r = await (await _httpClient.PostAsJsonAsync(requestUrl, requestContent))
-            //    .Content.ReadFromJsonAsync<ResponseToken>();
-
             System.IO.Stream responseBody = await response.Content.ReadAsStreamAsync();
-            dynamic tokenResponse = await JsonSerializer.DeserializeAsync(responseBody, typeof(ResponseToken));
+            dynamic tokenResponse = await JsonSerializer.DeserializeAsync(responseBody, typeof(TokenSp));
             return tokenResponse?.AccessToken;
         }
     }
