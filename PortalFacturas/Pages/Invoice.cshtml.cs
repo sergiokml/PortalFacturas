@@ -29,9 +29,18 @@ namespace PortalFacturas.Pages
 
         public InvoiceModel(IApiCenService apiCenService, IXslMapperFunctionService xlstMapperService, ISharePointService sharePointService)
         {
-            this.apiCenService = apiCenService;
-            this.xlstMapperService = xlstMapperService;
-            this.sharePointService = sharePointService;
+            try
+            {
+                this.apiCenService = apiCenService;
+                this.xlstMapperService = xlstMapperService;
+                this.sharePointService = sharePointService;
+            }
+            catch (Exception)
+            {
+
+                throw new Exception("buuuuu");
+            }
+           
         }
 
         private DteResult BuscarInst(int render)
@@ -69,10 +78,8 @@ namespace PortalFacturas.Pages
                     dte.EmissionErpA = "01LOTDAQYY27JRRCMHLRHYSX2VKEZ4FJTW";
                     byte[] bytes = await sharePointService
                         .DownloadConvertedFileAsync(dte.EmissionErpA);
-                    Mensaje = Mensaje + Directory.GetCurrentDirectory();
                     try
                     {
-                        Mensaje = Mensaje + "entro a convertir";
                         byte[] t = await xlstMapperService
                        .LoadXslAsync()
                        .AddParam(bytes)

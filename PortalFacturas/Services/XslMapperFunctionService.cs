@@ -47,24 +47,9 @@ namespace PortalFacturas.Services
 
         public XslMapperFunctionService(HttpClient _httpClient)
         {
-            try
-            {
-                this._httpClient = _httpClient;
-                _xslt = new XslCompiledTransform(enableDebug: true);
-                _arguments = new XsltArgumentList();
-
-                //using (StringReader reader = new(Resources.Custodium))
-                //{
-                //    XmlReader xsltReader = XmlReader.Create(reader);
-                //    _xslt.Load(xsltReader, new XsltSettings(true, false), null);
-                //}
-            }
-            catch (Exception)
-            {
-
-                throw new Exception($"ctor !!!?");
-            }
-
+            this._httpClient = _httpClient;
+            _xslt = new XslCompiledTransform(enableDebug: false);
+            _arguments = new XsltArgumentList();
         }
 
         public async Task<IXslMapperFunctionService> AddParam(byte[] inputXml)
