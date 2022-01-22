@@ -18,30 +18,18 @@ namespace PortalFacturas.Services
         Task<List<ParticipantResult>> GetParticipantsAsync(string username = null);
         Task<string> GetAccessTokenAsync(string username, string password);
         Task<InstructionModel> GetInstructionsAsync(string creditor, string debtor);
-        Task<string> ConvertDocument(string filepath);
         Task GetDocumentos(List<InstructionResult> instructions);
-
     }
 
     public class ApiCenService : IApiCenService
     {
         private readonly HttpClient httpClient;
-        //private readonly JsonSerializerOptions jsonSerializerOptions;
         private readonly OptionsModel options;
-
-        //public IConfiguration Configuration { get; }
 
         public ApiCenService(HttpClient httpClient, IOptions<OptionsModel> options)
         {
-            //Configuration = configuration;
             this.httpClient = httpClient;
             this.options = options.Value;
-
-            //jsonSerializerOptions = new JsonSerializerOptions
-            //{
-            //    IgnoreNullValues = true
-            //    //,DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault
-            //};
         }
 
         public async Task<string> GetAccessTokenAsync(string username, string password)
@@ -51,8 +39,8 @@ namespace PortalFacturas.Services
                 Username = username,
                 Password = password
             };
-
-            return ((dynamic)await (await httpClient.PostAsJsonAsync("token-auth/", value)).Content.ReadFromJsonAsync<TokenCen>())?.Token;
+            return ((dynamic)await (await httpClient.PostAsJsonAsync("token-auth/", value))
+                .Content.ReadFromJsonAsync<TokenCen>())?.Token;
         }
 
         public async Task<InstructionModel> GetInstructionsAsync(string creditor, string debtor)
@@ -62,10 +50,7 @@ namespace PortalFacturas.Services
             {
                 return await httpClient.GetFromJsonAsync<InstructionModel>(requestUri);
             }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+            catch (Exception) { throw; }
         }
 
         public async Task<List<ParticipantResult>> GetParticipantsAsync(string username)
@@ -85,28 +70,29 @@ namespace PortalFacturas.Services
             agente = (await httpClient
                    .GetFromJsonAsync<AgentModel>(url))
                    .Results.ToList()[0];
-            tareas = agente.Participants.Select(async m =>
-            {
-                string requestUri = $"v1/resources/participants/?id={m.ParticipantID}";
-                list.AddRange((await httpClient
-                .GetFromJsonAsync<ParticipantModel>(requestUri)).Results);
-                return list;
-            }).ToList();
-            await Task.WhenAll(tareas);
-            return list.OrderBy(c => c.Id).ToList();
+
+            List<int> ids = new List<int>();
+            ids.AddRange(agente.Participants.Select(c => c.ParticipantID));
+            string joined = string.Join(",", ids);
+
+            //HttpResponseMessage res = await httpClient.GetAsync($"v1/resources/participants/?id={joined}");
+
+            ParticipantModel response = await httpClient
+                    .GetFromJsonAsync<ParticipantModel>($"v1/resources/participants/?id={joined}");
+            return response.Results.OrderBy(c => c.Name).ToList();
+
+
+
+            //tareas = agente.Participants.Select(async m =>
+            //{
+            //    string requestUri = $"v1/resources/participants/?id={m.ParticipantID}";
+            //    list.AddRange((await httpClient
+            //    .GetFromJsonAsync<ParticipantModel>(requestUri)).Results);
+            //    return list;
+            //}).ToList();
+            //await Task.WhenAll(tareas);
+            //return list.OrderBy(c => c.Name).ToList();
         }
-
-        public async Task<string> ConvertDocument(string filepath)
-        {
-            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync(filepath);
-            if (!httpResponseMessage.IsSuccessStatusCode)
-            {
-                throw new Exception($"Instrucción facturada, pero no existe el documento en CEN.");
-            }
-            return await httpResponseMessage.Content.ReadAsStringAsync();
-        }
-
-
 
 
         public async Task GetDocumentos(List<InstructionResult> instructions)

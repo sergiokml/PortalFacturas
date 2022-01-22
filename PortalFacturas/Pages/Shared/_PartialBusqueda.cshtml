@@ -16,7 +16,7 @@
         </div>
     </div>
 
-    int path = 0;
+string path = string.Empty;   
     <div class="container-fluid table-responsive py-5" style="padding-right: 0px;padding-left: 0px;">
         <table class="table table-sm">
             <thead>
@@ -53,8 +53,9 @@
                 @foreach (var item in Model.Instructions)
                 {
                     var existelink = false;
-                    var dtecount = 0;
-                    @if (item.DteResult != null)
+                    var dtecount = 0;            
+                    
+                    @if (item.DteResult != null && item.DteResult.Count > 0)
                     {
 
                         existelink = true;
@@ -94,7 +95,7 @@
                                             </th>
                                         </tr>
 
-                                        @for (int i = 1; i < item.DteResult.Count; i++)
+                                        @for (int y = 1; y < item.DteResult.Count; y++)
                                         {
                                             <tr>
 
@@ -102,8 +103,8 @@
                                                     @{
                                                         if (existelink)
                                                         {
-                                                            var emi = item.DteResult[i].EmissionDt;
-                                                            if (item.DteResult[0].EmissionDt != new DateTime(0001, 01, 01))
+                                                            var emi = item.DteResult[y].EmissionDt;
+                                                            if (item.DteResult[y].EmissionDt != new DateTime(0001, 01, 01))
                                                             {
                                                                 @String.Format("{0:dd-MM-yyyy}", emi)
                                                             }
@@ -118,7 +119,7 @@
                                                     @{
                                                         if (existelink)
                                                         {
-                                                            @Html.DisplayFor(modelItem => item.DteResult[i].Folio)
+                                                            @Html.DisplayFor(modelItem => item.DteResult[y].Folio)
                                                         }
                                                         else
                                                         {
@@ -128,25 +129,25 @@
                                                 </td>
                                                 @{
                                     string t = string.Empty;
-                                                    if (item.DteResult[i].Type == 1)
+                                                    if (item.DteResult[y].Type == 1)
                                                     {
                                                         t = "33";
 
                                                     }
-                                                    else if (item.DteResult[i].Type == 2)
+                                                    else if (item.DteResult[y].Type == 2)
                                                     {
                                                         t = "61";
 
                                                     }
                                                     @*path =$"E{item.Creditor}T{t}F{item.DteResult[i].Folio}R{item.Debtor}";*@
-                                                    path = item.DteResult[i].Id;
+                                                    path = item.DteResult[y].Id.ToString();
                                                 }
                                                 <td class="d-none d-xl-block">
                                                     @Html.DisplayFor(modelItem => item.AuxiliaryData.PaymentMatrixConcept)
                                                 </td>
                                                 <td style="text-align: right;">
                                                     @{
-                                                        var monto2 = item.DteResult[i].NetAmount;
+                                                        var monto2 = item.DteResult[y].NetAmount;
                                                         @String.Format(System.Globalization.CultureInfo.GetCultureInfo("es-CL"), "{0:C}", monto2) }
                                                 </td>
                                                 <td class="d-none d-xl-block" style="text-align: right;">
@@ -244,7 +245,7 @@
                                 }
 
                                 @*path = $"E{item.Creditor}T{t}F{item.DteResult[0].Folio}R{item.Debtor}";*@
-                                path = item.DteResult[0].Id;
+                                path = item.DteResult[0].Id.ToString();
                             }
                         }
                         <td class="text-center">
@@ -272,16 +273,16 @@
                             }
                         </td>
                     </tr>
-
+                     
                 }
             </tbody>
         </table>
         <div>
             <ul class="pagination">
-                @for (var i = 1; i <= Model.TotalPages; i++)
+                @for (var z = 1; z <= Model.TotalPages; z++)
                 {
-                    <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
-                        <a asp-route-currentpage="@i" class="page-link" asp-page-handler="Pagina">@i</a>
+                    <li class="page-item @(z == Model.CurrentPage ? "active" : "")">
+                        <a asp-route-currentpage="@z" class="page-link" asp-page-handler="Pagina">@z</a>
                     </li>
                 }
             </ul>

@@ -36,29 +36,30 @@ namespace PortalFacturas
             {
                 c.BaseAddress = new Uri(configuration.GetConnectionString("EndPointSharepoint") ?? "");
             });
-            if (currentEnvironmen.IsDevelopment())
-            {
-                // Cliente Function Azure
-                services.AddHttpClient<IXslMapperFunctionService, XslMapperFunctionService>(c =>
-                {
-                    c.BaseAddress = new Uri(configuration.GetConnectionString("EndPointFunctionDev") ?? "");
-                });
-            }
-            else
-            {
-                // Cliente Function Azure
-                services.AddHttpClient<IXslMapperFunctionService, XslMapperFunctionService>(c =>
-                {
-                    c.BaseAddress = new Uri(configuration.GetConnectionString("EndPointFunctionProd") ?? "");
-                });
-            }
+            //if (currentEnvironmen.IsDevelopment())
+            //{
+            //    // Cliente Function Azure
+            //    services.AddHttpClient<IXslMapperFunctionService, XslMapperFunctionService>(c =>
+            //    {
+            //        c.BaseAddress = new Uri(configuration.GetConnectionString("EndPointFunctionDev") ?? "");
+            //    });
+            //}
+            //else
+            //{
+            //    // Cliente Function Azure
+            //    services.AddHttpClient<IXslMapperFunctionService, XslMapperFunctionService>(c =>
+            //    {
+            //        c.BaseAddress = new Uri(configuration.GetConnectionString("EndPointFunctionProd") ?? "");
+            //    });
+            //}
 
+            services.AddTransient<IXslMapperFunctionService, XslMapperFunctionService>();
 
             // Cliente Restack.IO
-            services.AddHttpClient<IConvertToPdfService, ConvertToPdfService>(c =>
-            {
-                c.BaseAddress = new Uri(configuration.GetConnectionString("EndPointApiConvertToPdf") ?? "");
-            });
+            //services.AddHttpClient<IConvertToPdfService, ConvertToPdfService>(c =>
+            //{
+            //    c.BaseAddress = new Uri(configuration.GetConnectionString("EndPointApiConvertToPdf") ?? "");
+            //});
 
             services.Configure<OptionsModel>(configuration);
 

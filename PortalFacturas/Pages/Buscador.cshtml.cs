@@ -169,8 +169,10 @@ namespace PortalFacturas.Pages
                     Count = l.Count;
                     await apiCenService.GetDocumentos(l.Results.ToList());
                     SessionHelper.SetObjectAsJson(HttpContext.Session, "Instrucciones", l.Results);
-                    Instructions = l.Results.OrderByDescending((InstructionResult c) => c.AuxiliaryData.PaymentMatrixPublication).ToList().Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList();
+                    Instructions = l.Results.OrderByDescending((InstructionResult c) => c.AuxiliaryData.PaymentMatrixPublication)
+                        .ToList().Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList();
                     ViewData["count"] = $"No existen instrucciones de Pago.";
+                    MensajeError = $"No existen instrucciones de Pago.";
                 }
                 catch (Exception ex)
                 {

@@ -8,8 +8,8 @@ using PortalFacturas.Services;
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace PortalFacturas.Pages
@@ -18,7 +18,6 @@ namespace PortalFacturas.Pages
     {
         private readonly IApiCenService apiCenService;
         private readonly IXslMapperFunctionService xlstMapperService;
-        private readonly IConvertToPdfService convertToPdfService;
         private readonly ISharePointService sharePointService;
 
 
@@ -28,84 +27,71 @@ namespace PortalFacturas.Pages
         [BindProperty]
         public string Mensaje { get; set; }
 
-        public InvoiceModel(IApiCenService apiCenService, IXslMapperFunctionService xlstMapperService, IConvertToPdfService convertToPdfService, ISharePointService sharePointService)
+        public InvoiceModel(IApiCenService apiCenService, IXslMapperFunctionService xlstMapperService, ISharePointService sharePointService)
         {
             this.apiCenService = apiCenService;
             this.xlstMapperService = xlstMapperService;
-            this.convertToPdfService = convertToPdfService;
             this.sharePointService = sharePointService;
         }
 
-        //Html
-        public async Task<ActionResult> OnGetHtmlDocAsync(int render)
+        private DteResult BuscarInst(int render)
         {
-            try
+            List<InstructionResult> ejemplo = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
+            for (int i = 0; i < ejemplo.Count; i++)
             {
-                List<InstructionResult> ejemplo = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
-                for (int i = 0; i < ejemplo.Count; i++)
+                InstructionResult nrodte = ejemplo.ElementAt(i);
+                if (nrodte.DteResult != null)
                 {
-                    InstructionResult nrodte = ejemplo.ElementAt(i);
-                    if (nrodte.DteResult != null)
+                    for (int z = 0; z < nrodte.DteResult.Count; z++)
                     {
-                        for (int z = 0; z < nrodte.DteResult.Count; z++)
+                        DteResult dte = nrodte.DteResult[z];
+                        if (dte.Id == render)
                         {
-                            DteResult dte = nrodte.DteResult[z];
-                            if (dte.Id == render)
-                            {
-                                if (!string.IsNullOrEmpty(dte.EmissionErpA))
-                                {
-                                    string EmissionErpB = dte.EmissionErpA;
-                                    byte[] bytes = await sharePointService
-                                        .DownloadConvertedFileAsync(EmissionErpB);
-                                    FileResult fileResult = new FileContentResult(bytes, "text/html")
-                                    {
-                                        FileDownloadName = $"{dte.Folio}.xml"
-                                    };
-                                    return fileResult;
-                                }
-                            }
+                            return dte;
                         }
                     }
                 }
-
-                //foreach (InstructionResult item in ejemplo)
-                //{
-                //    if (item != null && item.DteResult != null && item.DteResult.Count > 0)
-                //    {
-                //        DteResult t = item.DteResult.FirstOrDefault(c => c.Id == render);
-                //    }
-                //}
-
-                ////var x = ejemplo.FirstOrDefault(c=>c.DteResult.FirstOrDefault(f =>f.Id == render));
-                //InstructionResult instruction = ejemplo.FirstOrDefault(c => c.Id == render);
-
-                //if (instruction.DteResult[0].EmissionErpA != null)
-                //{
-                //    string EmissionErpB = instruction.DteResult[0].EmissionErpA;
-                //    byte[] bytes = await sharePointService
-                //        .DownloadConvertedFileAsync(EmissionErpB);
-                //    FileResult fileResult = new FileContentResult(bytes, "text/html")
-                //    {
-                //        FileDownloadName = $"{instruction.DteResult[0].Folio}.xml"
-                //    };
-                //    return fileResult;
-                //}
+            }
+            return null;
+        }
+        //Html
+        public async Task<ActionResult> OnGetHtmlDocAsync(string render)
+        {
+            try
+            {
+                DteResult dte = BuscarInst(Convert.ToInt32(render));
 
 
+                if (dte != null)
+                {
+                    // Debo serializar de acuerdo al DTE => 2 tipos
 
+                    dte.EmissionErpA = "01LOTDAQYY27JRRCMHLRHYSX2VKEZ4FJTW";
+                    byte[] bytes = await sharePointService
+                        .DownloadConvertedFileAsync(dte.EmissionErpA);
+                    Mensaje = Mensaje + Directory.GetCurrentDirectory();
+                    try
+                    {
+                        Mensaje = Mensaje + "entro a convertir";
+                        byte[] t = await xlstMapperService
+                       .LoadXslAsync()
+                       .AddParam(bytes)
+                       .TransformAsync(bytes);
+                        MemoryStream memoryStream = new(t);
+                        return new FileStreamResult(memoryStream, "text/html");
+                    }
+                    catch (Exception ex)
+                    {
+                        Mensaje = Mensaje + $"{ex.Message}: convertir a html";
+                    }
 
-
-                //byte[] bytes = await sharePointService
-                //          .DownloadConvertedFileAsync(render);
-                //MemoryStream memoryStream = new(bytes);
-                //return new FileStreamResult(memoryStream, "text/html");
+                }
             }
             catch (Exception ex)
             {
-                Mensaje = ex.Message;
+                Mensaje = Mensaje + ex.Message;
             }
-            //Mensaje = "No existe ID 'EmissionErpA'";
-            Mensaje = "No se puede mostrar el doc.";
+            //Mensaje = "No se puede mostrar el doc!!!!!.";
             return Page();
         }
 
@@ -114,17 +100,14 @@ namespace PortalFacturas.Pages
         {
             try
             {
-                List<InstructionResult> ejemplo = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
-                InstructionResult instruction = ejemplo.FirstOrDefault(c => c.Id == render);
-
-                if (instruction.DteResult[0].EmissionErpB != null)
+                DteResult dte = BuscarInst(render);
+                if (dte != null)
                 {
-                    string EmissionErpB = instruction.DteResult[0].EmissionErpB;
                     byte[] bytes = await sharePointService
-                        .DownloadConvertedFileAsync(EmissionErpB);
+                        .DownloadConvertedFileAsync(dte.EmissionErpB);
                     FileResult fileResult = new FileContentResult(bytes, "application/xml")
                     {
-                        FileDownloadName = $"{instruction.DteResult[0].Folio}.xml"
+                        FileDownloadName = $"{dte.Folio}.xml"
                     };
                     return fileResult;
                 }
@@ -133,7 +116,6 @@ namespace PortalFacturas.Pages
             {
                 Mensaje = ex.Message;
             }
-            //Mensaje = "No existe ID 'EmissionErpB'";
             Mensaje = "No se puede mostrar el doc.";
             return Page();
         }
@@ -143,19 +125,14 @@ namespace PortalFacturas.Pages
         {
             try
             {
-                List<InstructionResult> ejemplo = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
-                InstructionResult instruction = ejemplo.FirstOrDefault(c => c.Id == render);
-
-                if (instruction.DteResult[0].ReceptionErp != null)
+                DteResult dte = BuscarInst(render);
+                if (dte != null)
                 {
-                    string ReceptionErp = instruction.DteResult[0].ReceptionErp;
                     byte[] doc = await sharePointService
-                        .DownloadConvertedFileAsync(ReceptionErp);
-                    byte[] bytes = await convertToPdfService
-                        .ConvertToPdf(Encoding.UTF8.GetString(doc));
-                    FileResult fileResult = new FileContentResult(bytes, "application/pdf")
+                        .DownloadConvertedFileAsync(dte.ReceptionErp);
+                    FileResult fileResult = new FileContentResult(doc, "application/pdf")
                     {
-                        FileDownloadName = $"{instruction.DteResult[0].Folio}.pdf"
+                        FileDownloadName = $"{dte.Folio}.pdf"
                     };
                     return fileResult;
                 }
@@ -164,7 +141,6 @@ namespace PortalFacturas.Pages
             {
                 Mensaje = ex.Message;
             }
-            //Mensaje = "No existe ID 'ReceptionErp'";
             Mensaje = "No se puede mostrar el doc.";
             return Page();
         }

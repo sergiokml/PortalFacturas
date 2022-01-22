@@ -72,7 +72,7 @@ namespace PortalFacturas.Pages
 
         private async Task SetAuthCookieAsync(string UserName)
         {
-            UserName = "carlosalfredo.mendoza.robles@acciona.com";
+            UserName = "portaldepagos@igx.cl";
             List<Claim> claims = new()
             {
                 new Claim(ClaimTypes.Email, UserName)
