@@ -78,12 +78,24 @@ namespace PortalFacturas
         {
             if (env.IsDevelopment())
             {
+                //app.UseExceptionHandler("/Error");
                 app.UseDeveloperExceptionPage();
             }
             else
             {
+                //app.UseExceptionHandler("/Error");
                 app.UseHsts();
             }
+            app.Use(async (ctx, next) =>
+            {
+                await next();
+
+                if (ctx.Response.StatusCode == 404 && !ctx.Response.HasStarted)
+                {
+                    ctx.Request.Path = "/Error";
+                    await next();
+                }
+            });
 
             app.UseSession();
 

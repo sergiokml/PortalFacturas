@@ -1,4 +1,4 @@
-
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 
 namespace PortalFacturas.Pages
 {
+    [Authorize]
     public class InvoiceModel : PageModel
     {
         private readonly IApiCenService apiCenService;
@@ -40,7 +41,12 @@ namespace PortalFacturas.Pages
 
                 throw new Exception("buuuuu");
             }
-           
+
+        }
+        public void OnGet()
+        {
+            //await OnGetHtmlDocAsync(render);
+
         }
 
         private DteResult BuscarInst(int render)
@@ -69,36 +75,26 @@ namespace PortalFacturas.Pages
             try
             {
                 DteResult dte = BuscarInst(Convert.ToInt32(render));
-
-
                 if (dte != null)
                 {
                     // Debo serializar de acuerdo al DTE => 2 tipos
-
                     dte.EmissionErpA = "01LOTDAQYY27JRRCMHLRHYSX2VKEZ4FJTW";
                     byte[] bytes = await sharePointService
                         .DownloadConvertedFileAsync(dte.EmissionErpA);
-                    try
-                    {
-                        byte[] t = await xlstMapperService
-                       .LoadXslAsync()
-                       .AddParam(bytes)
-                       .TransformAsync(bytes);
-                        MemoryStream memoryStream = new(t);
-                        return new FileStreamResult(memoryStream, "text/html");
-                    }
-                    catch (Exception ex)
-                    {
-                        Mensaje = Mensaje + $"{ex.Message}: convertir a html";
-                    }
 
+                    byte[] t = await xlstMapperService
+                   .LoadXslAsync()
+                   .AddParam(bytes)
+                   .TransformAsync(bytes);
+                    MemoryStream memoryStream = new(t);
+                    return new FileStreamResult(memoryStream, "text/html");
                 }
             }
             catch (Exception ex)
             {
-                Mensaje = Mensaje + ex.Message;
+                Mensaje = ex.Message;
             }
-            //Mensaje = "No se puede mostrar el doc!!!!!.";
+            Mensaje = "Intente nuevamente.";
             return Page();
         }
 
@@ -121,9 +117,8 @@ namespace PortalFacturas.Pages
             }
             catch (Exception ex)
             {
-                Mensaje = ex.Message;
+                Mensaje = $"No se puede mostrar el documento: {ex.Message}";
             }
-            Mensaje = "No se puede mostrar el doc.";
             return Page();
         }
 
@@ -146,9 +141,8 @@ namespace PortalFacturas.Pages
             }
             catch (Exception ex)
             {
-                Mensaje = ex.Message;
+                Mensaje = $"No se puede mostrar el documento: {ex.Message}";
             }
-            Mensaje = "No se puede mostrar el doc.";
             return Page();
         }
     }

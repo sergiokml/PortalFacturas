@@ -53,8 +53,10 @@ namespace PortalFacturas.Pages
 
         public List<ParticipantResult> ParticipantReceptorList { get; set; }
 
-        public string MensajeError { get; set; }
+        //public string MensajeError { get; set; }
 
+        [BindProperty]
+        public string Mensaje { get; set; }
 
         [BindProperty(SupportsGet = true)]
         public string Folio { get; set; }
@@ -163,20 +165,22 @@ namespace PortalFacturas.Pages
                     TempData["ReceptorID"] = ReceptorID;
                     TempData.Keep("EmisorID");
                     TempData.Keep("ReceptorID");
-                    //  TempData.Keep("UserName");
 
-                    InstructionModel l = await apiCenService.GetInstructionsAsync(EmisorID.ToString(), ReceptorID.ToString());
+                    InstructionModel l = await apiCenService
+                        .GetInstructionsAsync(EmisorID.ToString(), ReceptorID.ToString());
+
                     Count = l.Count;
                     await apiCenService.GetDocumentos(l.Results.ToList());
                     SessionHelper.SetObjectAsJson(HttpContext.Session, "Instrucciones", l.Results);
+
                     Instructions = l.Results.OrderByDescending((InstructionResult c) => c.AuxiliaryData.PaymentMatrixPublication)
                         .ToList().Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList();
-                    ViewData["count"] = $"No existen instrucciones de Pago.";
-                    MensajeError = $"No existen instrucciones de Pago.";
+                    //ViewData["count"] = $"No existen instrucciones de Pago...";
+                    Mensaje = $"No existen instrucciones de Pago.";
                 }
                 catch (Exception ex)
                 {
-                    MensajeError = ex.Message;
+                    Mensaje = ex.Message;
                 }
             }
             await LlenarCombosAsync(true);
