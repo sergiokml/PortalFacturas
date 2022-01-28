@@ -22,7 +22,6 @@ namespace PortalFacturas.Pages
     {
         private readonly IApiCenService apiCenService;
 
-
         [BindProperty(SupportsGet = true)]
         public int CurrentPage { get; set; } = 1;
 
@@ -68,8 +67,6 @@ namespace PortalFacturas.Pages
 
         }
 
-
-
         public async Task OnGetAsync()
         {
             //Primera carga de la página
@@ -78,17 +75,22 @@ namespace PortalFacturas.Pages
                 //TempData.Keep("UserName");
                 await LlenarCombosAsync();
             }
-
         }
 
         public async Task<IActionResult> OnPostBuscarFolioAsync()
         {
-            //Buscar Folio       
+            //Buscar Folio
             if (ModelState.IsValid && !string.IsNullOrEmpty(Folio))
             {
-                List<InstructionResult> sessionList = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
+                List<InstructionResult> sessionList = SessionHelperExtension.GetObjectFromJson<
+                    List<InstructionResult>
+                >(HttpContext.Session, "Instrucciones");
 
-                InstructionResult res = sessionList.FirstOrDefault(c => c.DteResult != null && c.DteResult.Any(c => c.Folio == Convert.ToInt32(Folio)));
+                InstructionResult res = sessionList.FirstOrDefault(
+                    c =>
+                        c.DteResult != null
+                        && c.DteResult.Any(c => c.Folio == Convert.ToInt32(Folio))
+                );
                 if (res == null)
                 {
                     Paginacion();
@@ -108,7 +110,6 @@ namespace PortalFacturas.Pages
             ReceptorID = (int)TempData["ReceptorID"];
             TempData.Keep("EmisorID");
             TempData.Keep("ReceptorID");
-            //TempData.Keep("UserName");
 
             await LlenarCombosAsync(true);
             return Page();
@@ -119,39 +120,35 @@ namespace PortalFacturas.Pages
         {
             EmisorID = (int)TempData["EmisorID"];
             ReceptorID = (int)TempData["ReceptorID"];
-            List<InstructionResult> sessionList = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
+            List<InstructionResult> sessionList = SessionHelperExtension.GetObjectFromJson<
+                List<InstructionResult>
+            >(HttpContext.Session, "Instrucciones");
 
             List<InstructionResult> lista = sessionList
-                .OrderByDescending((InstructionResult c) => c.AuxiliaryData.PaymentMatrixPublication)
-                .Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList();
+                .OrderByDescending(
+                    (InstructionResult c) => c.AuxiliaryData.PaymentMatrixPublication
+                )
+                .Skip((CurrentPage - 1) * PageSize)
+                .Take(PageSize)
+                .ToList();
             Count = sessionList.Count;
             Instructions = lista;
 
             TempData.Keep("EmisorID");
             TempData.Keep("ReceptorID");
-            //TempData.Keep("UserName");
         }
 
         public async Task OnGetBuscarFolioAsync()
         {
             //Volver del Buscador Folios
-            if (ModelState.IsValid && TempData["EmisorID"] != null && TempData["ReceptorID"] != null)
+            if (
+                ModelState.IsValid && TempData["EmisorID"] != null && TempData["ReceptorID"] != null
+            )
             {
                 Paginacion();
             }
             await LlenarCombosAsync(true);
         }
-
-        //public async Task<IActionResult> OnGetCarPartialAsync()
-        //{
-        //    if (ModelState.IsValid && TempData["EmisorID"] != null && TempData["ReceptorID"] != null)
-        //    {
-        //        return Partial("_PartialBusqueda");
-        //    }
-        //    await LlenarCombosAsync(true);
-        //    return Page();
-        //}
-
 
         public async Task OnPostBuscarAsync()
         {
@@ -166,17 +163,31 @@ namespace PortalFacturas.Pages
                     TempData.Keep("EmisorID");
                     TempData.Keep("ReceptorID");
 
-                    InstructionModel l = await apiCenService
-                        .GetInstructionsAsync(EmisorID.ToString(), ReceptorID.ToString());
+                    InstructionModel l = await apiCenService.GetInstructionsAsync(
+                        EmisorID.ToString(),
+                        ReceptorID.ToString()
+                    );
 
                     Count = l.Count;
                     await apiCenService.GetDocumentos(l.Results.ToList());
-                    SessionHelper.SetObjectAsJson(HttpContext.Session, "Instrucciones", l.Results);
+                    SessionHelperExtension.SetObjectAsJson(
+                        HttpContext.Session,
+                        "Instrucciones",
+                        l.Results
+                    );
 
-                    Instructions = l.Results.OrderByDescending((InstructionResult c) => c.AuxiliaryData.PaymentMatrixPublication)
-                        .ToList().Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList();
-                    //ViewData["count"] = $"No existen instrucciones de Pago...";
-                    Mensaje = $"No existen instrucciones de Pago.";
+                    Instructions = l.Results
+                        .OrderByDescending(
+                            (InstructionResult c) => c.AuxiliaryData.PaymentMatrixPublication
+                        )
+                        .ToList()
+                        .Skip((CurrentPage - 1) * PageSize)
+                        .Take(PageSize)
+                        .ToList();
+                    if (Instructions.Count == 0)
+                    {
+                        throw new Exception("No existen instrucciones de Pago.");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -186,11 +197,12 @@ namespace PortalFacturas.Pages
             await LlenarCombosAsync(true);
         }
 
-
         public async Task OnGetPaginaAsync()
         {
             //Páginas de Paginación
-            if (ModelState.IsValid && TempData["EmisorID"] != null && TempData["ReceptorID"] != null)
+            if (
+                ModelState.IsValid && TempData["EmisorID"] != null && TempData["ReceptorID"] != null
+            )
             {
                 Paginacion();
             }
@@ -201,26 +213,51 @@ namespace PortalFacturas.Pages
         {
             if (isPostBack)
             {
-                ParticipantEmisorList = SessionHelper.GetObjectFromJson<List<ParticipantResult>>(HttpContext.Session, "ParticipantEmisor");
-                ParticipantEmisor = new SelectList(ParticipantEmisorList, nameof(ParticipantResult.Id), nameof(ParticipantResult.Name));
+                ParticipantEmisorList = SessionHelperExtension.GetObjectFromJson<
+                    List<ParticipantResult>
+                >(HttpContext.Session, "ParticipantEmisor");
+                ParticipantEmisor = new SelectList(
+                    ParticipantEmisorList,
+                    nameof(ParticipantResult.Id),
+                    nameof(ParticipantResult.Name)
+                );
 
-
-                ParticipantReceptorList = SessionHelper.GetObjectFromJson<List<ParticipantResult>>(HttpContext.Session, "ParticipantReceptor");
-                ParticipantReceptor = new SelectList(ParticipantReceptorList, nameof(ParticipantResult.Id), nameof(ParticipantResult.Name));
-
+                ParticipantReceptorList = SessionHelperExtension.GetObjectFromJson<
+                    List<ParticipantResult>
+                >(HttpContext.Session, "ParticipantReceptor");
+                ParticipantReceptor = new SelectList(
+                    ParticipantReceptorList,
+                    nameof(ParticipantResult.Id),
+                    nameof(ParticipantResult.Name)
+                );
             }
             else // Falso
             {
                 //UserName = "miguel.buzunariz@enel.com";
                 string email = User.FindFirstValue(ClaimTypes.Email);
                 ParticipantReceptorList = await apiCenService.GetParticipantsAsync(email);
-                ParticipantReceptor = new SelectList(ParticipantReceptorList, nameof(ParticipantResult.Id), nameof(ParticipantResult.Name));
-                SessionHelper.SetObjectAsJson(HttpContext.Session, "ParticipantReceptor", ParticipantReceptorList);
-
+                ParticipantReceptor = new SelectList(
+                    ParticipantReceptorList,
+                    nameof(ParticipantResult.Id),
+                    nameof(ParticipantResult.Name)
+                );
+                SessionHelperExtension.SetObjectAsJson(
+                    HttpContext.Session,
+                    "ParticipantReceptor",
+                    ParticipantReceptorList
+                );
 
                 ParticipantEmisorList = await apiCenService.GetParticipantsAsync();
-                ParticipantEmisor = new SelectList(ParticipantEmisorList, nameof(ParticipantResult.Id), nameof(ParticipantResult.Name));
-                SessionHelper.SetObjectAsJson(HttpContext.Session, "ParticipantEmisor", ParticipantEmisorList);
+                ParticipantEmisor = new SelectList(
+                    ParticipantEmisorList,
+                    nameof(ParticipantResult.Id),
+                    nameof(ParticipantResult.Name)
+                );
+                SessionHelperExtension.SetObjectAsJson(
+                    HttpContext.Session,
+                    "ParticipantEmisor",
+                    ParticipantEmisorList
+                );
             }
 
 

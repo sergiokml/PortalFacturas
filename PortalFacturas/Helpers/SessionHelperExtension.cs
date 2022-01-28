@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace PortalFacturas.Helpers
 {
-    public static class SessionHelper
+    public static class SessionHelperExtension
     {
         public static void SetObjectAsJson(this ISession session, string key, object value)
         {

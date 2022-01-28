@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 using PortalFacturas.Helpers;
+using PortalFacturas.Interfaces;
 using PortalFacturas.Models;
 using PortalFacturas.Services;
 
@@ -17,10 +18,9 @@ namespace PortalFacturas.Pages
     [Authorize]
     public class InvoiceModel : PageModel
     {
-        private readonly IApiCenService apiCenService;
-        private readonly IXslMapperFunctionService xlstMapperService;
+        private readonly IXsltHelper xlstMapperService;
         private readonly ISharePointService sharePointService;
-
+        private readonly IConvertToPdfService convertToPdfService;
 
         [BindProperty(SupportsGet = true)]
         public int Folio { get; set; }
@@ -28,30 +28,26 @@ namespace PortalFacturas.Pages
         [BindProperty]
         public string Mensaje { get; set; }
 
-        public InvoiceModel(IApiCenService apiCenService, IXslMapperFunctionService xlstMapperService, ISharePointService sharePointService)
+        public InvoiceModel(
+            ISharePointService sharePointService,
+            IConvertToPdfService convertToPdfService
+        )
         {
-            try
-            {
-                this.apiCenService = apiCenService;
-                this.xlstMapperService = xlstMapperService;
-                this.sharePointService = sharePointService;
-            }
-            catch (Exception)
-            {
-
-                throw new Exception("buuuuu");
-            }
-
+            xlstMapperService = new XsltHelper();
+            this.sharePointService = sharePointService;
+            this.convertToPdfService = convertToPdfService;
         }
+
         public void OnGet()
         {
             //await OnGetHtmlDocAsync(render);
-
         }
 
         private DteResult BuscarInst(int render)
         {
-            List<InstructionResult> ejemplo = SessionHelper.GetObjectFromJson<List<InstructionResult>>(HttpContext.Session, "Instrucciones");
+            List<InstructionResult> ejemplo = SessionHelperExtension.GetObjectFromJson<
+                List<InstructionResult>
+            >(HttpContext.Session, "Instrucciones");
             for (int i = 0; i < ejemplo.Count; i++)
             {
                 InstructionResult nrodte = ejemplo.ElementAt(i);
@@ -69,6 +65,7 @@ namespace PortalFacturas.Pages
             }
             return null;
         }
+
         //Html
         public async Task<ActionResult> OnGetHtmlDocAsync(string render)
         {
@@ -78,14 +75,16 @@ namespace PortalFacturas.Pages
                 if (dte != null)
                 {
                     // Debo serializar de acuerdo al DTE => 2 tipos
-                    dte.EmissionErpA = "01LOTDAQYY27JRRCMHLRHYSX2VKEZ4FJTW";
-                    byte[] bytes = await sharePointService
-                        .DownloadConvertedFileAsync(dte.EmissionErpA);
-
+                    byte[] bytes = await sharePointService.DownloadConvertedFileAsync(
+                        dte.EmissionErpA
+                    );
                     byte[] t = await xlstMapperService
-                   .LoadXslAsync()
-                   .AddParam(bytes)
-                   .TransformAsync(bytes);
+                        .LoadXslAsync()
+                        .AddParam(bytes)
+                        .TransformAsync(bytes);
+
+                    string test = t.ToString(false);
+
                     MemoryStream memoryStream = new(t);
                     return new FileStreamResult(memoryStream, "text/html");
                 }
@@ -94,7 +93,7 @@ namespace PortalFacturas.Pages
             {
                 Mensaje = ex.Message;
             }
-            Mensaje = "Intente nuevamente.";
+            Mensaje = "Intente nuevamente."; // q tipo de error es?
             return Page();
         }
 
@@ -106,8 +105,9 @@ namespace PortalFacturas.Pages
                 DteResult dte = BuscarInst(render);
                 if (dte != null)
                 {
-                    byte[] bytes = await sharePointService
-                        .DownloadConvertedFileAsync(dte.EmissionErpB);
+                    byte[] bytes = await sharePointService.DownloadConvertedFileAsync(
+                        dte.EmissionErpA
+                    );
                     FileResult fileResult = new FileContentResult(bytes, "application/xml")
                     {
                         FileDownloadName = $"{dte.Folio}.xml"
@@ -122,7 +122,7 @@ namespace PortalFacturas.Pages
             return Page();
         }
 
-
+        //PdfDoc
         public async Task<ActionResult> OnGetPdfDocAsync(int render)
         {
             try
@@ -130,13 +130,25 @@ namespace PortalFacturas.Pages
                 DteResult dte = BuscarInst(render);
                 if (dte != null)
                 {
-                    byte[] doc = await sharePointService
-                        .DownloadConvertedFileAsync(dte.ReceptionErp);
-                    FileResult fileResult = new FileContentResult(doc, "application/pdf")
-                    {
-                        FileDownloadName = $"{dte.Folio}.pdf"
-                    };
-                    return fileResult;
+                    // Debo serializar de acuerdo al DTE => 2 tipos
+                    byte[] bytes = await sharePointService.DownloadConvertedFileAsync(
+                        dte.EmissionErpA
+                    );
+                    byte[] t = await xlstMapperService
+                        .LoadXslAsync()
+                        .AddParam(bytes)
+                        .TransformAsync(bytes);
+
+                    string test = t.ToString(false);
+
+                    string pdf = await convertToPdfService.ConvertToPdf(t.ToString(false));
+
+                    return Redirect(pdf);
+                    //FileResult fileResult = new FileContentResult(pdf, "application/pdf")
+                    //{
+                    //    FileDownloadName = $"{dte.Folio}.pdf"
+                    //};
+                    return null;
                 }
             }
             catch (Exception ex)

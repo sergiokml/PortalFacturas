@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-using PortalFacturas.Models;
 using PortalFacturas.Services;
 
 using System;
@@ -13,7 +12,6 @@ namespace PortalFacturas
 {
     public class Startup
     {
-
         private readonly IConfiguration configuration;
         private readonly IWebHostEnvironment currentEnvironmen;
 
@@ -27,49 +25,36 @@ namespace PortalFacturas
         {
             services.AddRazorPages();
             // Cliente Cen
-            services.AddHttpClient<IApiCenService, ApiCenService>(c =>
-            {
-                c.BaseAddress = new Uri(configuration.GetConnectionString("EndPointApiCen") ?? "");
-            });
-            // Cliente Sharepoint
-            services.AddHttpClient<ISharePointService, SharePointService>(c =>
-            {
-                c.BaseAddress = new Uri(configuration.GetConnectionString("EndPointSharepoint") ?? "");
-            });
-            //if (currentEnvironmen.IsDevelopment())
-            //{
-            //    // Cliente Function Azure
-            //    services.AddHttpClient<IXslMapperFunctionService, XslMapperFunctionService>(c =>
-            //    {
-            //        c.BaseAddress = new Uri(configuration.GetConnectionString("EndPointFunctionDev") ?? "");
-            //    });
-            //}
-            //else
-            //{
-            //    // Cliente Function Azure
-            //    services.AddHttpClient<IXslMapperFunctionService, XslMapperFunctionService>(c =>
-            //    {
-            //        c.BaseAddress = new Uri(configuration.GetConnectionString("EndPointFunctionProd") ?? "");
-            //    });
-            //}
-
-            services.AddTransient<IXslMapperFunctionService, XslMapperFunctionService>();
-
-            // Cliente Restack.IO
-            //services.AddHttpClient<IConvertToPdfService, ConvertToPdfService>(c =>
-            //{
-            //    c.BaseAddress = new Uri(configuration.GetConnectionString("EndPointApiConvertToPdf") ?? "");
-            //});
-
-            services.Configure<OptionsModel>(configuration);
-
-
-            services.AddAuthentication("appcookie")
-                .AddCookie("appcookie", options =>
+            services.AddHttpClient<IApiCenService, ApiCenService>(
+                c =>
                 {
-                    options.LoginPath = "/Index";
-                });
+                    c.BaseAddress = new Uri(
+                        configuration.GetConnectionString("EndPointApiCen") ?? ""
+                    );
+                }
+            );
+            // Cliente Sharepoint
+            services.AddHttpClient<ISharePointService, SharePointService>(
+                c =>
+                {
+                    c.BaseAddress = new Uri(
+                        configuration.GetConnectionString("EndPointSharepoint") ?? ""
+                    );
+                }
+            );
 
+            // Cliente Pdf
+            services.AddHttpClient<IConvertToPdfService, ConvertToPdfService>();
+            services.Configure<AppSettings>(configuration);
+            services
+                .AddAuthentication("appcookie")
+                .AddCookie(
+                    "appcookie",
+                    options =>
+                    {
+                        options.LoginPath = "/Index";
+                    }
+                );
             services.AddSession();
             services.AddHttpContextAccessor();
         }
@@ -78,39 +63,36 @@ namespace PortalFacturas
         {
             if (env.IsDevelopment())
             {
-                //app.UseExceptionHandler("/Error");
                 app.UseDeveloperExceptionPage();
             }
             else
             {
-                //app.UseExceptionHandler("/Error");
                 app.UseHsts();
             }
-            app.Use(async (ctx, next) =>
-            {
-                await next();
-
-                if (ctx.Response.StatusCode == 404 && !ctx.Response.HasStarted)
+            app.Use(
+                async (ctx, next) =>
                 {
-                    ctx.Request.Path = "/Error";
                     await next();
+
+                    if (ctx.Response.StatusCode == 404 && !ctx.Response.HasStarted)
+                    {
+                        ctx.Request.Path = "/Error";
+                        await next();
+                    }
                 }
-            });
-
+            );
             app.UseSession();
-
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
-
             app.UseAuthentication();
             app.UseAuthorization();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapRazorPages();
-            });
+            app.UseEndpoints(
+                endpoints =>
+                {
+                    endpoints.MapRazorPages();
+                }
+            );
         }
     }
-
 }

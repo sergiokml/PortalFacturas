@@ -1,6 +1,6 @@
-﻿namespace PortalFacturas.Models
+﻿namespace PortalFacturas
 {
-    public class OptionsModel
+    public class AppSettings
     {
         public string EmailEmisor { get; set; }
         public string GrantType { get; set; }

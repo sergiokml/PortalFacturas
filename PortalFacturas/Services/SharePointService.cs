@@ -19,9 +19,9 @@ namespace PortalFacturas.Services
     public class SharePointService : ISharePointService
     {
         private readonly HttpClient _httpClient;
-        public readonly OptionsModel _options;
+        public readonly AppSettings _options;
 
-        public SharePointService(HttpClient _httpClient, IOptions<OptionsModel> _options)
+        public SharePointService(HttpClient _httpClient, IOptions<AppSettings> _options)
         {
             this._httpClient = _httpClient;
             this._options = _options?.Value;
@@ -29,22 +29,29 @@ namespace PortalFacturas.Services
 
         private async Task CreateAuthorizedHttpClient()
         {
-            List<KeyValuePair<string, string>> values = new()
-            {
-                new KeyValuePair<string, string>("client_id", _options.ClientId),
-                new KeyValuePair<string, string>("client_secret", _options.ClientSecret),
-                new KeyValuePair<string, string>("scope", _options.Scope),
-                new KeyValuePair<string, string>("grant_type", _options.GrantType),
-                new KeyValuePair<string, string>("resource", _options.Resource)
-            };
+            List<KeyValuePair<string, string>> values =
+                new()
+                {
+                    new KeyValuePair<string, string>("client_id", _options.ClientId),
+                    new KeyValuePair<string, string>("client_secret", _options.ClientSecret),
+                    new KeyValuePair<string, string>("scope", _options.Scope),
+                    new KeyValuePair<string, string>("grant_type", _options.GrantType),
+                    new KeyValuePair<string, string>("resource", _options.Resource)
+                };
             string requestUrl = $"{_options.TenantId}/oauth2/token";
             FormUrlEncodedContent requestContent = new FormUrlEncodedContent(values);
             HttpResponseMessage response = await _httpClient.PostAsync(requestUrl, requestContent);
             if (response.IsSuccessStatusCode)
             {
                 Stream responseBody = await response.Content.ReadAsStreamAsync();
-                dynamic tokenResponse = await JsonSerializer.DeserializeAsync(responseBody, typeof(TokenSp));
-                _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {tokenResponse?.AccessToken}");
+                dynamic tokenResponse = await JsonSerializer.DeserializeAsync(
+                    responseBody,
+                    typeof(TokenSp)
+                );
+                _httpClient.DefaultRequestHeaders.TryAddWithoutValidation(
+                    "Authorization",
+                    $"Bearer {tokenResponse?.AccessToken}"
+                );
             }
             else
             {

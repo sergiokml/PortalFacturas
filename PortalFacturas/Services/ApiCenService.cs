@@ -10,7 +10,6 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
-
 namespace PortalFacturas.Services
 {
     public interface IApiCenService
@@ -24,9 +23,9 @@ namespace PortalFacturas.Services
     public class ApiCenService : IApiCenService
     {
         private readonly HttpClient httpClient;
-        private readonly OptionsModel options;
+        private readonly AppSettings options;
 
-        public ApiCenService(HttpClient httpClient, IOptions<OptionsModel> options)
+        public ApiCenService(HttpClient httpClient, IOptions<AppSettings> options)
         {
             this.httpClient = httpClient;
             this.options = options.Value;
@@ -34,13 +33,12 @@ namespace PortalFacturas.Services
 
         public async Task<string> GetAccessTokenAsync(string username, string password)
         {
-            var value = new
-            {
-                Username = username,
-                Password = password
-            };
-            return ((dynamic)await (await httpClient.PostAsJsonAsync("token-auth/", value))
-                .Content.ReadFromJsonAsync<TokenCen>())?.Token;
+            var value = new { Username = username, Password = password };
+            return (
+                (dynamic)await (
+                    await httpClient.PostAsJsonAsync("token-auth/", value)
+                ).Content.ReadFromJsonAsync<TokenCen>()
+            )?.Token;
         }
 
         public async Task<InstructionModel> GetInstructionsAsync(string creditor, string debtor)
@@ -50,7 +48,10 @@ namespace PortalFacturas.Services
             {
                 return await httpClient.GetFromJsonAsync<InstructionModel>(requestUri);
             }
-            catch (Exception) { throw; }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         public async Task<List<ParticipantResult>> GetParticipantsAsync(string username)
@@ -67,9 +68,7 @@ namespace PortalFacturas.Services
             {
                 url = "v1/resources/agents/?email=" + username;
             }
-            agente = (await httpClient
-                   .GetFromJsonAsync<AgentModel>(url))
-                   .Results.ToList()[0];
+            agente = (await httpClient.GetFromJsonAsync<AgentModel>(url)).Results.ToList()[0];
 
             List<int> ids = new List<int>();
             ids.AddRange(agente.Participants.Select(c => c.ParticipantID));
@@ -77,8 +76,9 @@ namespace PortalFacturas.Services
 
             //HttpResponseMessage res = await httpClient.GetAsync($"v1/resources/participants/?id={joined}");
 
-            ParticipantModel response = await httpClient
-                    .GetFromJsonAsync<ParticipantModel>($"v1/resources/participants/?id={joined}");
+            ParticipantModel response = await httpClient.GetFromJsonAsync<ParticipantModel>(
+                $"v1/resources/participants/?id={joined}"
+            );
             return response.Results.OrderBy(c => c.Name).ToList();
 
 
@@ -94,19 +94,25 @@ namespace PortalFacturas.Services
             //return list.OrderBy(c => c.Name).ToList();
         }
 
-
         public async Task GetDocumentos(List<InstructionResult> instructions)
         {
             List<Task> tareas = new();
-            tareas = instructions.Select(async m =>
-                {
-                    string requestUri = $"v1/resources/dtes/?reported_by_creditor=true&instruction={m.Id}";
-                    List<DteResult> dteModel = (await httpClient.GetFromJsonAsync<DteModel>(requestUri)).Results.ToList();
-                    if (dteModel != null && dteModel.Count > 0)
+            tareas = instructions
+                .Select(
+                    async m =>
                     {
-                        m.DteResult = dteModel;
+                        string requestUri =
+                            $"v1/resources/dtes/?reported_by_creditor=true&instruction={m.Id}";
+                        List<DteResult> dteModel = (
+                            await httpClient.GetFromJsonAsync<DteModel>(requestUri)
+                        ).Results.ToList();
+                        if (dteModel != null && dteModel.Count > 0)
+                        {
+                            m.DteResult = dteModel;
+                        }
                     }
-                }).ToList();
+                )
+                .ToList();
             await Task.WhenAll(tareas);
         }
     }
