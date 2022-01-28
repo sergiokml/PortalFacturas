@@ -91,9 +91,8 @@ namespace PortalFacturas.Pages
             }
             catch (Exception ex)
             {
-                Mensaje = ex.Message;
+                Mensaje = $"No se puede mostrar el documento: {ex.Message}";
             }
-            Mensaje = "Intente nuevamente."; // q tipo de error es?
             return Page();
         }
 
