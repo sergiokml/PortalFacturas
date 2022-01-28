@@ -41,9 +41,6 @@ namespace PortalFacturas.Pages
         [BindProperty]
         public List<InstructionResult> Instructions { get; set; } = new List<InstructionResult>();
 
-        [TempData]
-        public string UserName { get; set; }
-
         public SelectList ParticipantEmisor { get; set; }
 
         public SelectList ParticipantReceptor { get; set; }
@@ -51,8 +48,6 @@ namespace PortalFacturas.Pages
         public List<ParticipantResult> ParticipantEmisorList { get; set; }
 
         public List<ParticipantResult> ParticipantReceptorList { get; set; }
-
-        //public string MensajeError { get; set; }
 
         [BindProperty]
         public string Mensaje { get; set; }
@@ -63,8 +58,6 @@ namespace PortalFacturas.Pages
         public BuscadorModel(IApiCenService apiCenService)
         {
             this.apiCenService = apiCenService;
-
-
         }
 
         public async Task OnGetAsync()

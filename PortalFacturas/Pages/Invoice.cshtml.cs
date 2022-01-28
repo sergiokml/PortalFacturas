@@ -48,6 +48,7 @@ namespace PortalFacturas.Pages
             List<InstructionResult> ejemplo = SessionHelperExtension.GetObjectFromJson<
                 List<InstructionResult>
             >(HttpContext.Session, "Instrucciones");
+
             for (int i = 0; i < ejemplo.Count; i++)
             {
                 InstructionResult nrodte = ejemplo.ElementAt(i);
@@ -155,6 +156,21 @@ namespace PortalFacturas.Pages
                 Mensaje = $"No se puede mostrar el documento: {ex.Message}";
             }
             return Page();
+        }
+
+        private string GetFileName(DteResult dte)
+        {
+            string filename = string.Empty;
+            if (dte.Type == 1) //33
+            {
+                filename = $"{TempData["EmisorID"]}_33_{dte.Folio}";
+            }
+            else if (dte.Type == 2) //61
+            {
+                filename = $"{TempData["EmisorID"]}_61_{dte.Folio}";
+            }
+            TempData.Keep("EmisorID");
+            return filename;
         }
     }
 }
