@@ -11,7 +11,7 @@ namespace PortalFacturas.Services
 {
     public interface IConvertToPdfService
     {
-        Task<string> ConvertToPdf(string content);
+        Task<string> ConvertToPdf(string content, string filename);
     }
 
     public class ConvertToPdfService : IConvertToPdfService
@@ -23,13 +23,13 @@ namespace PortalFacturas.Services
             _httpClient = httpClient;
         }
 
-        public async Task<string> ConvertToPdf(string content)
+        public async Task<string> ConvertToPdf(string content, string filename)
         {
             PdfRequest jsondoc = new PdfRequest
             {
                 Html = content,
                 Inline = true,
-                FileName = "ttttttest.pdf"
+                FileName = $"{filename}.pdf"
             };
             string contentt = JsonSerializer.Serialize(jsondoc);
             HttpRequestMessage request =

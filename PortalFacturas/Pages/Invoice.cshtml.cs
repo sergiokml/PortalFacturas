@@ -11,7 +11,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace PortalFacturas.Pages
 {
@@ -48,19 +50,14 @@ namespace PortalFacturas.Pages
             List<InstructionResult> ejemplo = SessionHelperExtension.GetObjectFromJson<
                 List<InstructionResult>
             >(HttpContext.Session, "Instrucciones");
-
-            for (int i = 0; i < ejemplo.Count; i++)
+            foreach (InstructionResult item in ejemplo)
             {
-                InstructionResult nrodte = ejemplo.ElementAt(i);
-                if (nrodte.DteResult != null)
+                List<DteResult> dtes = item.DteResult;
+                foreach (DteResult d in dtes)
                 {
-                    for (int z = 0; z < nrodte.DteResult.Count; z++)
+                    if (d.Id == render)
                     {
-                        DteResult dte = nrodte.DteResult[z];
-                        if (dte.Id == render)
-                        {
-                            return dte;
-                        }
+                        return d;
                     }
                 }
             }
@@ -73,22 +70,17 @@ namespace PortalFacturas.Pages
             try
             {
                 DteResult dte = BuscarInst(Convert.ToInt32(render));
-                if (dte != null)
-                {
-                    // Debo serializar de acuerdo al DTE => 2 tipos
-                    byte[] bytes = await sharePointService.DownloadConvertedFileAsync(
-                        dte.EmissionErpA
-                    );
-                    byte[] t = await xlstMapperService
-                        .LoadXslAsync()
-                        .AddParam(bytes)
-                        .TransformAsync(bytes);
+                byte[] bytes = await sharePointService.DownloadConvertedFileAsync(dte.EmissionErpA);
 
-                    string test = t.ToString(false);
+                string responseText = Encoding.ASCII.GetString(bytes);
+                XDocument respnseXml = XDocument.Parse(responseText);
 
-                    MemoryStream memoryStream = new(t);
-                    return new FileStreamResult(memoryStream, "text/html");
-                }
+                XElement yyy = respnseXml.Descendants().First(p => p.Name.LocalName == "DTE");
+                byte[] b = yyy.ToString().ToBytes(false);
+
+                byte[] t = await xlstMapperService.LoadXslAsync().AddParam(b).TransformAsync(b);
+                MemoryStream memoryStream = new(t);
+                return new FileStreamResult(memoryStream, "text/html");
             }
             catch (Exception ex)
             {
@@ -103,17 +95,12 @@ namespace PortalFacturas.Pages
             try
             {
                 DteResult dte = BuscarInst(render);
-                if (dte != null)
+                byte[] bytes = await sharePointService.DownloadConvertedFileAsync(dte.EmissionErpA);
+                FileResult fileResult = new FileContentResult(bytes, "application/xml")
                 {
-                    byte[] bytes = await sharePointService.DownloadConvertedFileAsync(
-                        dte.EmissionErpA
-                    );
-                    FileResult fileResult = new FileContentResult(bytes, "application/xml")
-                    {
-                        FileDownloadName = $"{dte.Folio}.xml"
-                    };
-                    return fileResult;
-                }
+                    FileDownloadName = $"{dte.Folio}.xml"
+                };
+                return fileResult;
             }
             catch (Exception ex)
             {
@@ -128,28 +115,20 @@ namespace PortalFacturas.Pages
             try
             {
                 DteResult dte = BuscarInst(render);
-                if (dte != null)
-                {
-                    // Debo serializar de acuerdo al DTE => 2 tipos
-                    byte[] bytes = await sharePointService.DownloadConvertedFileAsync(
-                        dte.EmissionErpA
-                    );
-                    byte[] t = await xlstMapperService
-                        .LoadXslAsync()
-                        .AddParam(bytes)
-                        .TransformAsync(bytes);
-
-                    string test = t.ToString(false);
-
-                    string pdf = await convertToPdfService.ConvertToPdf(t.ToString(false));
-
-                    return Redirect(pdf);
-                    //FileResult fileResult = new FileContentResult(pdf, "application/pdf")
-                    //{
-                    //    FileDownloadName = $"{dte.Folio}.pdf"
-                    //};
-                    return null;
-                }
+                byte[] bytes = await sharePointService.DownloadConvertedFileAsync(dte.EmissionErpA);
+                byte[] t = await xlstMapperService
+                    .LoadXslAsync()
+                    .AddParam(bytes)
+                    .TransformAsync(bytes);
+                string pdf = await convertToPdfService.ConvertToPdf(
+                    t.ToString(false),
+                    GetFileName(dte)
+                );
+                return Redirect(pdf);
+                //FileResult fileResult = new FileContentResult(pdf, "application/pdf")
+                //{
+                //    FileDownloadName = $"{dte.Folio}.pdf"
+                //};
             }
             catch (Exception ex)
             {
