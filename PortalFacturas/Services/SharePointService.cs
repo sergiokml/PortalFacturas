@@ -39,7 +39,7 @@ namespace PortalFacturas.Services
                     new KeyValuePair<string, string>("resource", _options.Resource)
                 };
             string requestUrl = $"{_options.TenantId}/oauth2/token";
-            FormUrlEncodedContent requestContent = new FormUrlEncodedContent(values);
+            FormUrlEncodedContent requestContent = new(values);
             HttpResponseMessage response = await _httpClient.PostAsync(requestUrl, requestContent);
             if (response.IsSuccessStatusCode)
             {

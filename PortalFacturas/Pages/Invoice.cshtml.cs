@@ -11,7 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -52,13 +51,23 @@ namespace PortalFacturas.Pages
             >(HttpContext.Session, "Instrucciones");
             foreach (InstructionResult item in ejemplo)
             {
-                List<DteResult> dtes = item.DteResult;
-                foreach (DteResult d in dtes)
+                try
                 {
-                    if (d.Id == render)
+                    List<DteResult> dtes = item.DteResult;
+                    if (dtes != null)
                     {
-                        return d;
+                        foreach (DteResult d in dtes)
+                        {
+                            if (d.Id == render)
+                            {
+                                return d;
+                            }
+                        }
                     }
+                }
+                catch (Exception)
+                {
+                    throw new Exception("");
                 }
             }
             return null;
@@ -71,12 +80,12 @@ namespace PortalFacturas.Pages
             {
                 DteResult dte = BuscarInst(Convert.ToInt32(render));
                 byte[] bytes = await sharePointService.DownloadConvertedFileAsync(dte.EmissionErpA);
-
-                string responseText = Encoding.ASCII.GetString(bytes);
-                XDocument respnseXml = XDocument.Parse(responseText);
-
-                XElement yyy = respnseXml.Descendants().First(p => p.Name.LocalName == "DTE");
-                byte[] b = yyy.ToString().ToBytes(false);
+                XDocument respnseXml = XDocument.Parse(bytes.ToString(false));
+                byte[] b = respnseXml
+                    .Descendants()
+                    .First(p => p.Name.LocalName == "DTE")
+                    .ToString()
+                    .ToBytes(false);
 
                 byte[] t = await xlstMapperService.LoadXslAsync().AddParam(b).TransformAsync(b);
                 MemoryStream memoryStream = new(t);
@@ -96,11 +105,7 @@ namespace PortalFacturas.Pages
             {
                 DteResult dte = BuscarInst(render);
                 byte[] bytes = await sharePointService.DownloadConvertedFileAsync(dte.EmissionErpA);
-                FileResult fileResult = new FileContentResult(bytes, "application/xml")
-                {
-                    FileDownloadName = $"{dte.Folio}.xml"
-                };
-                return fileResult;
+                return File(bytes, "application/xml", $"{GetFileName(dte)}.xml");
             }
             catch (Exception ex)
             {
@@ -114,21 +119,21 @@ namespace PortalFacturas.Pages
         {
             try
             {
-                DteResult dte = BuscarInst(render);
+                DteResult dte = BuscarInst(Convert.ToInt32(render));
                 byte[] bytes = await sharePointService.DownloadConvertedFileAsync(dte.EmissionErpA);
-                byte[] t = await xlstMapperService
-                    .LoadXslAsync()
-                    .AddParam(bytes)
-                    .TransformAsync(bytes);
-                string pdf = await convertToPdfService.ConvertToPdf(
-                    t.ToString(false),
+                XDocument respnseXml = XDocument.Parse(bytes.ToString(false));
+                byte[] b = respnseXml
+                    .Descendants()
+                    .First(p => p.Name.LocalName == "DTE")
+                    .ToString()
+                    .ToBytes(false);
+
+                byte[] html = await xlstMapperService.LoadXslAsync().AddParam(b).TransformAsync(b);
+                byte[] pdf = await convertToPdfService.ConvertToPdf(
+                    html.ToString(false),
                     GetFileName(dte)
                 );
-                return Redirect(pdf);
-                //FileResult fileResult = new FileContentResult(pdf, "application/pdf")
-                //{
-                //    FileDownloadName = $"{dte.Folio}.pdf"
-                //};
+                return File(pdf, "application/pdf", $"{GetFileName(dte)}.pdf");
             }
             catch (Exception ex)
             {

@@ -79,6 +79,12 @@ namespace PortalFacturas
                         ctx.Request.Path = "/Error";
                         await next();
                     }
+
+                    if (ctx.Response.StatusCode == 500 && !ctx.Response.HasStarted)
+                    {
+                        ctx.Request.Path = "/Buscador";
+                        await next();
+                    }
                 }
             );
             app.UseSession();

@@ -16,7 +16,7 @@ namespace PortalFacturas.Services
     {
         Task<List<ParticipantResult>> GetParticipantsAsync(string username = null);
         Task<string> GetAccessTokenAsync(string username, string password);
-        Task<InstructionModel> GetInstructionsAsync(string creditor, string debtor);
+        Task<List<InstructionResult>> GetInstructionsAsync(string creditor, string debtor);
         Task GetDocumentos(List<InstructionResult> instructions);
     }
 
@@ -41,12 +41,18 @@ namespace PortalFacturas.Services
             )?.Token;
         }
 
-        public async Task<InstructionModel> GetInstructionsAsync(string creditor, string debtor)
+        public async Task<List<InstructionResult>> GetInstructionsAsync(
+            string creditor,
+            string debtor
+        )
         {
             string requestUri = $"v2/resources/instructions/?creditor={creditor}&debtor={debtor}";
             try
             {
-                return await httpClient.GetFromJsonAsync<InstructionModel>(requestUri);
+                InstructionModel instr = await httpClient.GetFromJsonAsync<InstructionModel>(
+                    requestUri
+                );
+                return instr.Results.Where(c => c.Amount >= 10).ToList();
             }
             catch (Exception)
             {
@@ -62,11 +68,11 @@ namespace PortalFacturas.Services
             string url;
             if (username == null)
             {
-                url = "v1/resources/agents/?email=" + options.EmailEmisor;
+                url = "v1/resources/agents/?limit=1000&email=" + options.EmailEmisor;
             }
             else
             {
-                url = "v1/resources/agents/?email=" + username;
+                url = "v1/resources/agents/?limit=1000&email=" + username;
             }
             agente = (await httpClient.GetFromJsonAsync<AgentModel>(url)).Results.ToList()[0];
 
@@ -103,12 +109,19 @@ namespace PortalFacturas.Services
                     {
                         string requestUri =
                             $"v1/resources/dtes/?reported_by_creditor=true&instruction={m.Id}";
-                        List<DteResult> dteModel = (
+                        List<DteResult> dte = (
                             await httpClient.GetFromJsonAsync<DteModel>(requestUri)
                         ).Results.ToList();
-                        if (dteModel != null && dteModel.Count > 0)
+                        if (dte != null && dte.Count > 0)
                         {
-                            m.DteResult = dteModel;
+                            foreach (DteResult item in dte)
+                            {
+                                if (item.Type == 2) // 61 NC
+                                {
+                                    item.NetAmount *= -1;
+                                }
+                            }
+                            m.DteResult = dte;
                         }
                     }
                 )

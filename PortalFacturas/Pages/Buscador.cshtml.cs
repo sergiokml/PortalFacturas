@@ -108,7 +108,7 @@ namespace PortalFacturas.Pages
             return Page();
         }
 
-        [Authorize]
+        //[Authorize]
         private void Paginacion()
         {
             EmisorID = (int)TempData["EmisorID"];
@@ -118,14 +118,31 @@ namespace PortalFacturas.Pages
             >(HttpContext.Session, "Instrucciones");
 
             List<InstructionResult> lista = sessionList
-                .OrderByDescending(
-                    (InstructionResult c) => c.AuxiliaryData.PaymentMatrixPublication
-                )
+                .OrderByDescending(c => c.AuxiliaryData.PaymentMatrixPublication)
                 .Skip((CurrentPage - 1) * PageSize)
                 .Take(PageSize)
                 .ToList();
             Count = sessionList.Count;
+            //foreach (InstructionResult item in lista)
+            //{
+            //    item.DteResult = item.DteResult.OrderByDescending(c => c.EmissionDt).ToList();
+            //}
+
             Instructions = lista;
+            //foreach (InstructionResult item in Instructions)
+            //{
+            //    if (item.DteResult != null)
+            //    {
+            //        item.DteResult = item.DteResult.OrderByDescending(c => c.EmissionDt).ToList();
+            //    }
+            //}
+            foreach (InstructionResult item in Instructions)
+            {
+                if (item.DteResult != null)
+                {
+                    item.DteResult = item.DteResult.OrderByDescending(c => c.EmissionDt).ToList();
+                }
+            }
 
             TempData.Keep("EmisorID");
             TempData.Keep("ReceptorID");
@@ -156,30 +173,34 @@ namespace PortalFacturas.Pages
                     TempData.Keep("EmisorID");
                     TempData.Keep("ReceptorID");
 
-                    InstructionModel l = await apiCenService.GetInstructionsAsync(
+                    List<InstructionResult> l = await apiCenService.GetInstructionsAsync(
                         EmisorID.ToString(),
                         ReceptorID.ToString()
                     );
 
                     Count = l.Count;
-                    await apiCenService.GetDocumentos(l.Results.ToList());
-                    SessionHelperExtension.SetObjectAsJson(
-                        HttpContext.Session,
-                        "Instrucciones",
-                        l.Results
-                    );
+                    await apiCenService.GetDocumentos(l.ToList());
+                    SessionHelperExtension.SetObjectAsJson(HttpContext.Session, "Instrucciones", l);
 
-                    Instructions = l.Results
-                        .OrderByDescending(
-                            (InstructionResult c) => c.AuxiliaryData.PaymentMatrixPublication
+                    Instructions = l.OrderByDescending(
+                            c => c.AuxiliaryData.PaymentMatrixPublication
                         )
-                        .ToList()
+                        // .ToList()
                         .Skip((CurrentPage - 1) * PageSize)
                         .Take(PageSize)
                         .ToList();
                     if (Instructions.Count == 0)
                     {
                         throw new Exception("No existen instrucciones de Pago.");
+                    }
+                    foreach (InstructionResult item in Instructions)
+                    {
+                        if (item.DteResult != null)
+                        {
+                            item.DteResult = item.DteResult
+                                .OrderByDescending(c => c.EmissionDt)
+                                .ToList();
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -190,7 +211,7 @@ namespace PortalFacturas.Pages
             await LlenarCombosAsync(true);
         }
 
-        public async Task OnGetPaginaAsync()
+        public async Task OnGetPaginaAsync() // se activa al cambiar de paginas
         {
             //Páginas de Paginación
             if (
@@ -212,7 +233,7 @@ namespace PortalFacturas.Pages
                 ParticipantEmisor = new SelectList(
                     ParticipantEmisorList,
                     nameof(ParticipantResult.Id),
-                    nameof(ParticipantResult.Name)
+                    nameof(ParticipantResult.BusinessName)
                 );
 
                 ParticipantReceptorList = SessionHelperExtension.GetObjectFromJson<
@@ -221,7 +242,7 @@ namespace PortalFacturas.Pages
                 ParticipantReceptor = new SelectList(
                     ParticipantReceptorList,
                     nameof(ParticipantResult.Id),
-                    nameof(ParticipantResult.Name)
+                    nameof(ParticipantResult.BusinessName)
                 );
             }
             else // Falso
@@ -232,7 +253,7 @@ namespace PortalFacturas.Pages
                 ParticipantReceptor = new SelectList(
                     ParticipantReceptorList,
                     nameof(ParticipantResult.Id),
-                    nameof(ParticipantResult.Name)
+                    nameof(ParticipantResult.BusinessName)
                 );
                 SessionHelperExtension.SetObjectAsJson(
                     HttpContext.Session,
@@ -244,7 +265,7 @@ namespace PortalFacturas.Pages
                 ParticipantEmisor = new SelectList(
                     ParticipantEmisorList,
                     nameof(ParticipantResult.Id),
-                    nameof(ParticipantResult.Name)
+                    nameof(ParticipantResult.BusinessName)
                 );
                 SessionHelperExtension.SetObjectAsJson(
                     HttpContext.Session,

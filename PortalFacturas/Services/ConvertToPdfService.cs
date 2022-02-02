@@ -11,7 +11,7 @@ namespace PortalFacturas.Services
 {
     public interface IConvertToPdfService
     {
-        Task<string> ConvertToPdf(string content, string filename);
+        Task<byte[]> ConvertToPdf(string content, string filename);
     }
 
     public class ConvertToPdfService : IConvertToPdfService
@@ -23,7 +23,7 @@ namespace PortalFacturas.Services
             _httpClient = httpClient;
         }
 
-        public async Task<string> ConvertToPdf(string content, string filename)
+        public async Task<byte[]> ConvertToPdf(string content, string filename)
         {
             PdfRequest jsondoc = new PdfRequest
             {
@@ -39,28 +39,23 @@ namespace PortalFacturas.Services
                     Content = new StringContent(contentt, Encoding.UTF8, "application/json"),
                     RequestUri = new Uri("https://v2.api2pdf.com/chrome/pdf/html")
                 };
-            request.Headers.Add("Authorization", "3135c383-6882-408a-a965-2212131d3a48");
+            request.Headers.TryAddWithoutValidation(
+                "Authorization",
+                "3135c383-6882-408a-a965-2212131d3a48"
+            );
             HttpResponseMessage response = await _httpClient.SendAsync(request);
             if (response.IsSuccessStatusCode)
             {
                 string body = await response.Content.ReadAsStringAsync();
                 dynamic obj = JsonNode.Parse(body).AsObject();
-                return (string)obj["FileUrl"];
+                //return (string)obj["FileUrl"];
+
+                return await _httpClient.GetByteArrayAsync((string)obj["FileUrl"]);
             }
             else
             {
-                throw new Exception($"No se pudo convertir el documento.(restack.io)");
+                throw new Exception($"No se pudo convertir el documento.");
             }
-            //ResponsePdfRestPackModel pdf =
-            //    await response.Content.ReadFromJsonAsync<ResponsePdfRestPackModel>();
-
-            //HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync(pdf.Image);
-            //if (!httpResponseMessage.IsSuccessStatusCode)
-            //{
-            //    throw new Exception($"Instrucción facturada, pero no existe el documento en CEN.");
-            //}
-            //return await httpResponseMessage.Content.ReadAsByteArrayAsync();
-            ////return await GetPdfFile(pdf.Image);
         }
     }
 }
