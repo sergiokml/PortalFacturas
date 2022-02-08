@@ -54,9 +54,9 @@ namespace PortalFacturas.Pages
                     }
                     else
                     {
-                        if (UserName == "admin@cveportalfacturas.com" && Password == "cvepagos2022")
+                        if (!string.IsNullOrEmpty(UserName) && Password == "cvepagos2022")
                         {
-                            UserName = "portaldepagos@igx.cl";
+                            //UserName = "miguel.nava@goplicity.com";
                             await SetAuthCookieAsync(UserName);
                             return RedirectToPage("/Buscador");
                         }

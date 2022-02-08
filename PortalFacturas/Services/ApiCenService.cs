@@ -1,13 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 
 using PortalFacturas.Models;
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
 namespace PortalFacturas.Services
@@ -34,11 +33,15 @@ namespace PortalFacturas.Services
         public async Task<string> GetAccessTokenAsync(string username, string password)
         {
             var value = new { Username = username, Password = password };
-            return (
-                (dynamic)await (
-                    await httpClient.PostAsJsonAsync("token-auth/", value)
-                ).Content.ReadFromJsonAsync<TokenCen>()
-            )?.Token;
+            //return (
+            //    (dynamic)await (
+            //        await httpClient.PostAsJsonAsync("token-auth/", value)
+            //    ).Content.ReadFromJsonAsync<TokenCen>()
+            //)?.Token;
+            HttpContent response = (await httpClient.PostAsJsonAsync("token-auth/", value)).Content;
+            string body = await response.ReadAsStringAsync();
+            dynamic obj = JsonNode.Parse(body).AsObject();
+            return (string)obj["token"];
         }
 
         public async Task<List<InstructionResult>> GetInstructionsAsync(
@@ -47,23 +50,16 @@ namespace PortalFacturas.Services
         )
         {
             string requestUri = $"v2/resources/instructions/?creditor={creditor}&debtor={debtor}";
-            try
-            {
-                InstructionModel instr = await httpClient.GetFromJsonAsync<InstructionModel>(
-                    requestUri
-                );
-                return instr.Results.Where(c => c.Amount >= 10).ToList();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+
+            InstructionModel instr = await httpClient.GetFromJsonAsync<InstructionModel>(
+                requestUri
+            );
+            return instr.Results.Where(c => c.Amount >= 10).ToList();
         }
 
         public async Task<List<ParticipantResult>> GetParticipantsAsync(string username)
         {
             List<ParticipantResult> list = new();
-            AgentResult agente = new();
             List<Task<List<ParticipantResult>>> tareas = new();
             string url;
             if (username == null)
@@ -74,30 +70,17 @@ namespace PortalFacturas.Services
             {
                 url = "v1/resources/agents/?limit=1000&email=" + username;
             }
-            agente = (await httpClient.GetFromJsonAsync<AgentModel>(url)).Results.ToList()[0];
+            AgentResult agente = (
+                await httpClient.GetFromJsonAsync<AgentModel>(url)
+            ).Results.ToList()[0];
 
-            List<int> ids = new List<int>();
+            List<int> ids = new();
             ids.AddRange(agente.Participants.Select(c => c.ParticipantID));
             string joined = string.Join(",", ids);
-
-            //HttpResponseMessage res = await httpClient.GetAsync($"v1/resources/participants/?id={joined}");
-
             ParticipantModel response = await httpClient.GetFromJsonAsync<ParticipantModel>(
                 $"v1/resources/participants/?id={joined}"
             );
-            return response.Results.OrderBy(c => c.Name).ToList();
-
-
-
-            //tareas = agente.Participants.Select(async m =>
-            //{
-            //    string requestUri = $"v1/resources/participants/?id={m.ParticipantID}";
-            //    list.AddRange((await httpClient
-            //    .GetFromJsonAsync<ParticipantModel>(requestUri)).Results);
-            //    return list;
-            //}).ToList();
-            //await Task.WhenAll(tareas);
-            //return list.OrderBy(c => c.Name).ToList();
+            return response.Results.OrderBy(c => c.BusinessName).ToList();
         }
 
         public async Task GetDocumentos(List<InstructionResult> instructions)

@@ -1,6 +1,4 @@
-﻿using PortalFacturas.Models;
-
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -25,12 +23,7 @@ namespace PortalFacturas.Services
 
         public async Task<byte[]> ConvertToPdf(string content, string filename)
         {
-            PdfRequest jsondoc = new PdfRequest
-            {
-                Html = content,
-                Inline = true,
-                FileName = $"{filename}.pdf"
-            };
+            var jsondoc = new { Html = content, FileName = $"{filename}.pdf", };
             string contentt = JsonSerializer.Serialize(jsondoc);
             HttpRequestMessage request =
                 new()

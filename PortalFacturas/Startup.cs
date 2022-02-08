@@ -80,9 +80,9 @@ namespace PortalFacturas
                         await next();
                     }
 
-                    if (ctx.Response.StatusCode == 500 && !ctx.Response.HasStarted)
+                    if (ctx.Response.StatusCode == 500)
                     {
-                        ctx.Request.Path = "/Buscador";
+                        ctx.Request.Path = "/Index";
                         await next();
                     }
                 }
