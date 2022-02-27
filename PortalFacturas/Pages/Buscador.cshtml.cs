@@ -1,3 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -7,13 +14,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using PortalFacturas.Helpers;
 using PortalFacturas.Models;
 using PortalFacturas.Services;
-
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace PortalFacturas.Pages
 {
@@ -273,10 +273,6 @@ namespace PortalFacturas.Pages
                     ParticipantEmisorList
                 );
             }
-
-
-
-
         }
     }
 }

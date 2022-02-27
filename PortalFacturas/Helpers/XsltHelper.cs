@@ -1,7 +1,4 @@
-﻿using PortalFacturas.Interfaces;
-using PortalFacturas.Properties;
-
-using System;
+﻿using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -9,6 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Xsl;
+
+using PortalFacturas.Interfaces;
+using PortalFacturas.Properties;
 
 using ZXing;
 using ZXing.PDF417;

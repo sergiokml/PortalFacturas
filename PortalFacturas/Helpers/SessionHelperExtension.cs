@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Text.Json;
 
-using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 
 namespace PortalFacturas.Helpers
 {

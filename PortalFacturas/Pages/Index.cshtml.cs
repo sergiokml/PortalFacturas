@@ -1,13 +1,13 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using System;
+using System.Collections.Generic;
+using System.Security.Claims;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 using PortalFacturas.Services;
-
-using System;
-using System.Collections.Generic;
-using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace PortalFacturas.Pages
 {
@@ -36,6 +36,7 @@ namespace PortalFacturas.Pages
                 return RedirectToPage("/Buscador");
             }
             TempData.Clear();
+            //throw new Exception();
             return Page();
         }
 
@@ -81,11 +82,9 @@ namespace PortalFacturas.Pages
                 new AuthenticationProperties
                 {
                     IsPersistent = Recordar,
-                    ExpiresUtc = DateTime.UtcNow.AddMinutes(30) //Dura 30 min
+                    ExpiresUtc = DateTime.UtcNow.AddMinutes(120) //Dura 120 min
                 }
             );
         }
-
-
     }
 }

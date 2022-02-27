@@ -1,3 +1,5 @@
+using System;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -6,19 +8,15 @@ using Microsoft.Extensions.Hosting;
 
 using PortalFacturas.Services;
 
-using System;
-
 namespace PortalFacturas
 {
     public class Startup
     {
         private readonly IConfiguration configuration;
-        private readonly IWebHostEnvironment currentEnvironmen;
 
-        public Startup(IConfiguration configuration, IWebHostEnvironment env)
+        public Startup(IConfiguration configuration)
         {
             this.configuration = configuration;
-            currentEnvironmen = env;
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -68,6 +66,7 @@ namespace PortalFacturas
             else
             {
                 app.UseHsts();
+                // app.UseExceptionHandler("/Index");
             }
             app.Use(
                 async (ctx, next) =>

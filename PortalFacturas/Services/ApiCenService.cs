@@ -1,13 +1,13 @@
-﻿using Microsoft.Extensions.Options;
-
-using PortalFacturas.Models;
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+
+using Microsoft.Extensions.Options;
+
+using PortalFacturas.Models;
 
 namespace PortalFacturas.Services
 {
