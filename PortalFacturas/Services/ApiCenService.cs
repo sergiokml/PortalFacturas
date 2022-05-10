@@ -33,11 +33,6 @@ namespace PortalFacturas.Services
         public async Task<string> GetAccessTokenAsync(string username, string password)
         {
             var value = new { Username = username, Password = password };
-            //return (
-            //    (dynamic)await (
-            //        await httpClient.PostAsJsonAsync("token-auth/", value)
-            //    ).Content.ReadFromJsonAsync<TokenCen>()
-            //)?.Token;
             HttpContent response = (await httpClient.PostAsJsonAsync("token-auth/", value)).Content;
             string body = await response.ReadAsStringAsync();
             dynamic obj = JsonNode.Parse(body).AsObject();

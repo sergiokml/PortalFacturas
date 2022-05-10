@@ -30,8 +30,7 @@ namespace PortalFacturas.Services
                 {
                     Method = HttpMethod.Post,
                     Content = new StringContent(contentt, Encoding.UTF8, "application/json")
-                    //,
-                    //RequestUri = new Uri("https://v2.api2pdf.com/chrome/pdf/html")
+                    //RequestUri = new Uri("")
                 };
             request.Headers.TryAddWithoutValidation(
                 "Authorization",
@@ -42,8 +41,6 @@ namespace PortalFacturas.Services
             {
                 string body = await response.Content.ReadAsStringAsync();
                 dynamic obj = JsonNode.Parse(body).AsObject();
-                //return (string)obj["FileUrl"];
-
                 return await _httpClient.GetByteArrayAsync((string)obj["FileUrl"]);
             }
             else
