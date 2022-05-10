@@ -29,8 +29,9 @@ namespace PortalFacturas.Services
                 new()
                 {
                     Method = HttpMethod.Post,
-                    Content = new StringContent(contentt, Encoding.UTF8, "application/json"),
-                    RequestUri = new Uri("https://v2.api2pdf.com/chrome/pdf/html")
+                    Content = new StringContent(contentt, Encoding.UTF8, "application/json")
+                    //,
+                    //RequestUri = new Uri("https://v2.api2pdf.com/chrome/pdf/html")
                 };
             request.Headers.TryAddWithoutValidation(
                 "Authorization",

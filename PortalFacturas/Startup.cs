@@ -25,24 +25,24 @@ namespace PortalFacturas
             // Cliente Cen
             services.AddHttpClient<IApiCenService, ApiCenService>(
                 c =>
-                {
                     c.BaseAddress = new Uri(
                         configuration.GetConnectionString("EndPointApiCen") ?? ""
-                    );
-                }
+                    )
             );
             // Cliente Sharepoint
             services.AddHttpClient<ISharePointService, SharePointService>(
                 c =>
-                {
                     c.BaseAddress = new Uri(
                         configuration.GetConnectionString("EndPointSharepoint") ?? ""
-                    );
-                }
+                    )
             );
-
             // Cliente Pdf
-            services.AddHttpClient<IConvertToPdfService, ConvertToPdfService>();
+            services.AddHttpClient<IConvertToPdfService, ConvertToPdfService>(
+                c =>
+                    c.BaseAddress = new Uri(
+                        configuration.GetConnectionString("EndPointApiConvertToPdf") ?? ""
+                    )
+            );
             services.Configure<AppSettings>(configuration);
             services
                 .AddAuthentication("appcookie")
