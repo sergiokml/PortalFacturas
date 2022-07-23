@@ -1,19 +1,19 @@
-﻿using System;
+﻿using Microsoft.Extensions.Options;
+
+using PortalFacturas.Models;
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-using Microsoft.Extensions.Options;
-
-using PortalFacturas.Models;
-
 namespace PortalFacturas.Services
 {
     public interface ISharePointService
     {
-        Task<byte[]> DownloadConvertedFileAsync(string fileId);
+        Task<byte[]> DownloadFileAsync(string fileId);
     }
 
     public class SharePointService : ISharePointService
@@ -59,21 +59,16 @@ namespace PortalFacturas.Services
             }
         }
 
-        public async Task<byte[]> DownloadConvertedFileAsync(string fileId)
+        public async Task<byte[]> DownloadFileAsync(string fileId)
         {
             await CreateAuthorizedHttpClient();
             // Al reemplazar un archivo Xml, este conserva el ID.
             string path = $"{_options.Resource}beta/sites/{_options.SiteId}/drive/items/";
             string requestUrl = $"{path}{fileId}/content";
             HttpResponseMessage response = await _httpClient.GetAsync(requestUrl);
-            if (response.IsSuccessStatusCode)
-            {
-                return await response.Content.ReadAsByteArrayAsync();
-            }
-            else
-            {
-                throw new Exception($"No encontrado en Sharepoint.");
-            }
+            return response.IsSuccessStatusCode
+              ? await response.Content.ReadAsByteArrayAsync()
+              : throw new Exception($"No encontrado en Sharepoint.");
         }
     }
 }
