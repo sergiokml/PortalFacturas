@@ -1,5 +1,7 @@
 using System;
 
+using Cve.Notificacion;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -22,6 +24,7 @@ namespace PortalFacturas
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRazorPages();
+            services.AddScoped<GraphService>();
             // Cliente Cen
             services.AddHttpClient<IApiCenService, ApiCenService>(
                 c =>
@@ -78,10 +81,14 @@ namespace PortalFacturas
                         ctx.Request.Path = "/Error";
                         await next();
                     }
-
                     if (ctx.Response.StatusCode == 500)
                     {
                         ctx.Request.Path = "/Index";
+                        await next();
+                    }
+                    if (ctx.Response.StatusCode == 503)
+                    {
+                        ctx.Request.Path = "/Error";
                         await next();
                     }
                 }

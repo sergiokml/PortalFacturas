@@ -66,7 +66,9 @@ namespace PortalFacturas.Pages
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return RedirectToPage("/Error");
+                //throw new Exception(ex.Message);
             }
             return Page();
         }

@@ -1,3 +1,12 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Xml.Linq;
+
+using Cve.Notificacion;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -7,13 +16,6 @@ using PortalFacturas.Interfaces;
 using PortalFacturas.Models;
 using PortalFacturas.Services;
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-
 namespace PortalFacturas.Pages
 {
     [Authorize]
@@ -22,6 +24,7 @@ namespace PortalFacturas.Pages
         private readonly IXsltHelper xlstMapperService;
         private readonly ISharePointService sharePointService;
         private readonly IConvertToPdfService convertToPdfService;
+        private readonly GraphService graph;
 
         [BindProperty(SupportsGet = true)]
         public int Folio { get; set; }
@@ -31,12 +34,13 @@ namespace PortalFacturas.Pages
 
         public InvoiceModel(
             ISharePointService sharePointService,
-            IConvertToPdfService convertToPdfService
+            IConvertToPdfService convertToPdfService, GraphService graph
         )
         {
             xlstMapperService = new XsltHelper();
             this.sharePointService = sharePointService;
             this.convertToPdfService = convertToPdfService;
+            this.graph = graph;
         }
 
         public void OnGet()
@@ -79,7 +83,8 @@ namespace PortalFacturas.Pages
             try
             {
                 DteResult dte = BuscarInst(Convert.ToInt32(render));
-                byte[] bytes = await sharePointService.DownloadFileAsync(dte.EmissionErpA);
+                var bytes = await graph.BajarFile(dte.EmissionErpA);
+                //byte[] bytes = await sharePointService.DownloadFileAsync(dte.EmissionErpA);
                 XDocument respnseXml = XDocument.Parse(bytes.ToString(false));
                 byte[] b = respnseXml
                     .Descendants()

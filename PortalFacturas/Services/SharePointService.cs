@@ -1,13 +1,13 @@
-﻿using Microsoft.Extensions.Options;
-
-using PortalFacturas.Models;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+
+using Microsoft.Extensions.Options;
+
+using PortalFacturas.Models;
 
 namespace PortalFacturas.Services
 {
@@ -29,6 +29,9 @@ namespace PortalFacturas.Services
 
         private async Task CreateAuthorizedHttpClient()
         {
+
+
+
             List<KeyValuePair<string, string>> values =
                 new()
                 {

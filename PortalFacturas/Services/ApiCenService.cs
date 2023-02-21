@@ -11,13 +11,6 @@ using PortalFacturas.Models;
 
 namespace PortalFacturas.Services
 {
-    public interface IApiCenService
-    {
-        Task<List<ParticipantResult>> GetParticipantsAsync(string username = null);
-        Task<string> GetAccessTokenAsync(string username, string password);
-        Task<List<InstructionResult>> GetInstructionsAsync(string creditor, string debtor);
-        Task GetDocumentos(List<InstructionResult> instructions);
-    }
 
     public class ApiCenService : IApiCenService
     {
@@ -37,6 +30,7 @@ namespace PortalFacturas.Services
             string body = await response.ReadAsStringAsync();
             dynamic obj = JsonNode.Parse(body).AsObject();
             return (string)obj["token"];
+
         }
 
         public async Task<List<InstructionResult>> GetInstructionsAsync(
@@ -56,15 +50,9 @@ namespace PortalFacturas.Services
         {
             List<ParticipantResult> list = new();
             List<Task<List<ParticipantResult>>> tareas = new();
-            string url;
-            if (username == null)
-            {
-                url = "v1/resources/agents/?limit=1000&email=" + options.EmailEmisor;
-            }
-            else
-            {
-                url = "v1/resources/agents/?limit=1000&email=" + username;
-            }
+            string url = username == null
+                ? "v1/resources/agents/?limit=1000&email=" + options.EmailEmisor
+                : "v1/resources/agents/?limit=1000&email=" + username;
             AgentResult agente = (
                 await httpClient.GetFromJsonAsync<AgentModel>(url)
             ).Results.ToList()[0];
