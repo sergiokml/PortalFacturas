@@ -5,22 +5,26 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
+using Cve.Coordinador;
+using Cve.Coordinador.Extensions;
+using Cve.Coordinador.Models;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Configuration;
 
 using PortalFacturas.Helpers;
-using PortalFacturas.Models;
-using PortalFacturas.Services;
 
 namespace PortalFacturas.Pages
 {
     [Authorize]
     public class BuscadorModel : PageModel
     {
-        private readonly IApiCenService apiCenService;
+        private readonly CoordinadorInit cen;
+        private readonly IConfiguration config;
 
         [BindProperty(SupportsGet = true)]
         public int CurrentPage { get; set; } = 1;
@@ -39,15 +43,15 @@ namespace PortalFacturas.Pages
         public int EmisorID { get; set; }
 
         [BindProperty]
-        public List<InstructionResult> Instructions { get; set; } = new List<InstructionResult>();
+        public List<Instruction> Instructions { get; set; } = new List<Instruction>();
 
         public SelectList ParticipantEmisor { get; set; }
 
         public SelectList ParticipantReceptor { get; set; }
 
-        public List<ParticipantResult> ParticipantEmisorList { get; set; }
+        public List<Participant> ParticipantEmisorList { get; set; }
 
-        public List<ParticipantResult> ParticipantReceptorList { get; set; }
+        public List<Participant> ParticipantReceptorList { get; set; }
 
         [BindProperty]
         public string Mensaje { get; set; }
@@ -55,9 +59,10 @@ namespace PortalFacturas.Pages
         [BindProperty(SupportsGet = true)]
         public string Folio { get; set; }
 
-        public BuscadorModel(IApiCenService apiCenService)
+        public BuscadorModel(CoordinadorInit cen, IConfiguration config)
         {
-            this.apiCenService = apiCenService;
+            this.cen = cen;
+            this.config = config;
         }
 
         public async Task OnGetAsync()
@@ -75,14 +80,14 @@ namespace PortalFacturas.Pages
             //Buscar Folio
             if (ModelState.IsValid && !string.IsNullOrEmpty(Folio))
             {
-                List<InstructionResult> sessionList = SessionHelperExtension.GetObjectFromJson<
-                    List<InstructionResult>
+                List<Instruction> sessionList = SessionHelperExtension.GetObjectFromJson<
+                    List<Instruction>
                 >(HttpContext.Session, "Instrucciones");
 
-                InstructionResult res = sessionList.FirstOrDefault(
+                Instruction res = sessionList.FirstOrDefault(
                     c =>
-                        c.DteResult != null
-                        && c.DteResult.Any(c => c.Folio == Convert.ToInt32(Folio))
+                        c.DteAsociados != null
+                        && c.DteAsociados.Any(c => c.Folio == Convert.ToInt32(Folio))
                 );
                 if (res == null)
                 {
@@ -113,11 +118,11 @@ namespace PortalFacturas.Pages
         {
             EmisorID = (int)TempData["EmisorID"];
             ReceptorID = (int)TempData["ReceptorID"];
-            List<InstructionResult> sessionList = SessionHelperExtension.GetObjectFromJson<
-                List<InstructionResult>
+            List<Instruction> sessionList = SessionHelperExtension.GetObjectFromJson<
+                List<Instruction>
             >(HttpContext.Session, "Instrucciones");
 
-            List<InstructionResult> lista = sessionList
+            List<Instruction> lista = sessionList
                 .OrderByDescending(c => c.AuxiliaryData.PaymentMatrixPublication)
                 .Skip((CurrentPage - 1) * PageSize)
                 .Take(PageSize)
@@ -136,11 +141,13 @@ namespace PortalFacturas.Pages
             //        item.DteResult = item.DteResult.OrderByDescending(c => c.EmissionDt).ToList();
             //    }
             //}
-            foreach (InstructionResult item in Instructions)
+            foreach (Instruction item in Instructions)
             {
-                if (item.DteResult != null)
+                if (item.DteAsociados != null)
                 {
-                    item.DteResult = item.DteResult.OrderByDescending(c => c.EmissionDt).ToList();
+                    item.DteAsociados = item.DteAsociados
+                        .OrderByDescending(c => c.EmissionDt)
+                        .ToList();
                 }
             }
 
@@ -173,13 +180,17 @@ namespace PortalFacturas.Pages
                     TempData.Keep("EmisorID");
                     TempData.Keep("ReceptorID");
 
-                    List<InstructionResult> l = await apiCenService.GetInstructionsAsync(
-                        EmisorID.ToString(),
-                        ReceptorID.ToString()
-                    );
+                    var l = (
+                        await cen.InstructionService.GetManyById(
+                            EmisorID.ToString(),
+                            ReceptorID.ToString()
+                        )
+                    )
+                        .Where(c => c.Amount >= 10)
+                        .ToList();
 
-                    Count = l.Count;
-                    await apiCenService.GetDocumentos(l.ToList());
+                    Count = l.Count();
+                    await cen.DteService.GetDocumentos(l.ToList());
                     SessionHelperExtension.SetObjectAsJson(HttpContext.Session, "Instrucciones", l);
 
                     Instructions = l.OrderByDescending(
@@ -193,11 +204,11 @@ namespace PortalFacturas.Pages
                     {
                         throw new Exception("No existen instrucciones de Pago.");
                     }
-                    foreach (InstructionResult item in Instructions)
+                    foreach (var item in Instructions)
                     {
-                        if (item.DteResult != null)
+                        if (item.DteAsociados != null)
                         {
-                            item.DteResult = item.DteResult
+                            item.DteAsociados = item.DteAsociados
                                 .OrderByDescending(c => c.EmissionDt)
                                 .ToList();
                         }
@@ -227,45 +238,56 @@ namespace PortalFacturas.Pages
         {
             if (isPostBack)
             {
-                ParticipantEmisorList = SessionHelperExtension.GetObjectFromJson<
-                    List<ParticipantResult>
-                >(HttpContext.Session, "ParticipantEmisor");
+                // CUANDO YA HE SELECCIONADO AMBOS PARTICIPANTES EN LOS CBOS
+                ParticipantEmisorList = SessionHelperExtension.GetObjectFromJson<List<Participant>>(
+                    HttpContext.Session,
+                    "ParticipantEmisor"
+                );
                 ParticipantEmisor = new SelectList(
                     ParticipantEmisorList,
-                    nameof(ParticipantResult.Id),
-                    nameof(ParticipantResult.BusinessName)
+                    nameof(Participant.Id),
+                    nameof(Participant.BusinessName)
                 );
 
                 ParticipantReceptorList = SessionHelperExtension.GetObjectFromJson<
-                    List<ParticipantResult>
+                    List<Participant>
                 >(HttpContext.Session, "ParticipantReceptor");
                 ParticipantReceptor = new SelectList(
                     ParticipantReceptorList,
-                    nameof(ParticipantResult.Id),
-                    nameof(ParticipantResult.BusinessName)
+                    nameof(Participant.Id),
+                    nameof(Participant.BusinessName)
                 );
             }
             else // Falso
             {
-                //UserName = "miguel.buzunariz@enel.com";
                 string email = User.FindFirstValue(ClaimTypes.Email);
-                ParticipantReceptorList = await apiCenService.GetParticipantsAsync(email);
+                var agenteUser = await cen.AgentService.GetByEmail(email);
+                var receptor = await cen.ParticipantService.GetManyAsync(
+                    agenteUser.Participants.Select(c => c.ParticipantID).ToArray()
+                );
+                ParticipantReceptorList = receptor.ToList();
                 ParticipantReceptor = new SelectList(
                     ParticipantReceptorList,
-                    nameof(ParticipantResult.Id),
-                    nameof(ParticipantResult.BusinessName)
+                    nameof(Participant.Id),
+                    nameof(Participant.BusinessName)
                 );
                 SessionHelperExtension.SetObjectAsJson(
                     HttpContext.Session,
                     "ParticipantReceptor",
                     ParticipantReceptorList
                 );
-
-                ParticipantEmisorList = await apiCenService.GetParticipantsAsync();
+                // EMAIL PROPIO
+                var agenteCve = await cen.AgentService.GetByEmail(
+                    config.GetSection("CENConfig:User").Value!
+                );
+                var emisor = await cen.ParticipantService.GetManyAsync(
+                    agenteCve.Participants.Select(c => c.ParticipantID).ToArray()
+                );
+                ParticipantEmisorList = emisor.OrderBy(c => c.BusinessName).ToList();
                 ParticipantEmisor = new SelectList(
                     ParticipantEmisorList,
-                    nameof(ParticipantResult.Id),
-                    nameof(ParticipantResult.BusinessName)
+                    nameof(Participant.Id),
+                    nameof(Participant.BusinessName)
                 );
                 SessionHelperExtension.SetObjectAsJson(
                     HttpContext.Session,

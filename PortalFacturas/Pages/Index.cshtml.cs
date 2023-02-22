@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
+using Cve.Coordinador;
+
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-
-using PortalFacturas.Services;
 
 namespace PortalFacturas.Pages
 {
     public class IndexModel : PageModel
     {
-        private readonly IApiCenService apiCenService;
+        private readonly CoordinadorInit cen;
 
         //[BindProperty]
         //public string UserName { get; set; }
@@ -24,9 +24,9 @@ namespace PortalFacturas.Pages
         [BindProperty]
         public bool Recordar { get; set; }
 
-        public IndexModel(IApiCenService apiCenService)
+        public IndexModel(CoordinadorInit cen)
         {
-            this.apiCenService = apiCenService;
+            this.cen = cen;
         }
 
         public IActionResult OnGet()
@@ -46,8 +46,7 @@ namespace PortalFacturas.Pages
             {
                 if (ModelState.IsValid)
                 {
-                    string token = await apiCenService.GetAccessTokenAsync(UserName, Password);
-
+                    string token = await cen.AuthenticateService.AuthenticateAsync();
                     if (!string.IsNullOrEmpty(token))
                     {
                         await SetAuthCookieAsync(UserName);

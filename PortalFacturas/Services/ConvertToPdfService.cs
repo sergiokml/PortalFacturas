@@ -5,12 +5,10 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
+using PortalFacturas.Interfaces;
+
 namespace PortalFacturas.Services
 {
-    public interface IConvertToPdfService
-    {
-        Task<byte[]> ConvertToPdf(string content, string filename);
-    }
 
     public class ConvertToPdfService : IConvertToPdfService
     {

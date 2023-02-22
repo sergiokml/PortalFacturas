@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
+using Cve.Coordinador.Models;
 using Cve.Notificacion;
 
 using Microsoft.AspNetCore.Authorization;
@@ -13,18 +15,15 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 using PortalFacturas.Helpers;
 using PortalFacturas.Interfaces;
-using PortalFacturas.Models;
-using PortalFacturas.Services;
 
 namespace PortalFacturas.Pages
 {
     [Authorize]
     public class InvoiceModel : PageModel
     {
-        private readonly IXsltHelper xlstMapperService;
-        private readonly ISharePointService sharePointService;
         private readonly IConvertToPdfService convertToPdfService;
         private readonly GraphService graph;
+        private readonly XsltHelper xsltService = new();
 
         [BindProperty(SupportsGet = true)]
         public int Folio { get; set; }
@@ -33,12 +32,10 @@ namespace PortalFacturas.Pages
         public string Mensaje { get; set; }
 
         public InvoiceModel(
-            ISharePointService sharePointService,
-            IConvertToPdfService convertToPdfService, GraphService graph
+            IConvertToPdfService convertToPdfService,
+            GraphService graph
         )
         {
-            xlstMapperService = new XsltHelper();
-            this.sharePointService = sharePointService;
             this.convertToPdfService = convertToPdfService;
             this.graph = graph;
         }
@@ -48,19 +45,20 @@ namespace PortalFacturas.Pages
             //await OnGetHtmlDocAsync(render);
         }
 
-        private DteResult BuscarInst(int render)
+        private Dte BuscarInst(int render)
         {
-            List<InstructionResult> ejemplo = SessionHelperExtension.GetObjectFromJson<
-                List<InstructionResult>
-            >(HttpContext.Session, "Instrucciones");
-            foreach (InstructionResult item in ejemplo)
+            List<Instruction> temp = SessionHelperExtension.GetObjectFromJson<List<Instruction>>(
+                HttpContext.Session,
+                "Instrucciones"
+            );
+            foreach (Instruction item in temp)
             {
                 try
                 {
-                    List<DteResult> dtes = item.DteResult;
+                    var dtes = item.DteAsociados;
                     if (dtes != null)
                     {
-                        foreach (DteResult d in dtes)
+                        foreach (var d in dtes)
                         {
                             if (d.Id == render)
                             {
@@ -82,19 +80,24 @@ namespace PortalFacturas.Pages
         {
             try
             {
-                DteResult dte = BuscarInst(Convert.ToInt32(render));
-                var bytes = await graph.BajarFile(dte.EmissionErpA);
-                //byte[] bytes = await sharePointService.DownloadFileAsync(dte.EmissionErpA);
-                XDocument respnseXml = XDocument.Parse(bytes.ToString(false));
-                byte[] b = respnseXml
-                    .Descendants()
-                    .First(p => p.Name.LocalName == "DTE")
-                    .ToString()
-                    .ToBytes(false);
+                var dte = BuscarInst(Convert.ToInt32(render));
+                if (dte.EmissionErpA != "0")
+                {
+                    var bytes = await graph.BajarFile(dte.EmissionErpA);
+                    XDocument respnseXml = XDocument.Parse(Encoding.UTF8.GetString(bytes));
+                    var b = respnseXml
+                             .Descendants()
+                             .First(p => p.Name.LocalName == "DTE")
+                             .ToString();
+                    byte[] html = xsltService.TransformarXslt(Encoding.UTF8.GetBytes(b));
+                    MemoryStream memoryStream = new(html);
+                    return new FileStreamResult(memoryStream, "text/html");
+                }
+                else
+                {
+                    Mensaje = $"El documento no ha sido subido al Drive.";
+                }
 
-                byte[] t = await xlstMapperService.LoadXslAsync().AddParam(b).TransformAsync(b);
-                MemoryStream memoryStream = new(t);
-                return new FileStreamResult(memoryStream, "text/html");
             }
             catch (Exception ex)
             {
@@ -108,9 +111,16 @@ namespace PortalFacturas.Pages
         {
             try
             {
-                DteResult dte = BuscarInst(render);
-                byte[] bytes = await sharePointService.DownloadFileAsync(dte.EmissionErpA);
-                return File(bytes, "application/xml", $"{GetFileName(dte)}.xml");
+                Dte dte = BuscarInst(render);
+                if (dte.EmissionErpA != "0")
+                {
+                    var bytes = await graph.BajarFile(dte.EmissionErpA);
+                    return File(bytes, "application/xml", $"{GetFileName(dte)}.xml");
+                }
+                else
+                {
+                    Mensaje = $"El documento no ha sido subido al Drive.";
+                }
             }
             catch (Exception ex)
             {
@@ -124,21 +134,27 @@ namespace PortalFacturas.Pages
         {
             try
             {
-                DteResult dte = BuscarInst(Convert.ToInt32(render));
-                byte[] bytes = await sharePointService.DownloadFileAsync(dte.EmissionErpA);
-                XDocument respnseXml = XDocument.Parse(bytes.ToString(false));
-                byte[] b = respnseXml
-                    .Descendants()
-                    .First(p => p.Name.LocalName == "DTE")
-                    .ToString()
-                    .ToBytes(false);
+                Dte dte = BuscarInst(Convert.ToInt32(render));
+                if (dte.EmissionErpA != "0")
+                {
 
-                byte[] html = await xlstMapperService.LoadXslAsync().AddParam(b).TransformAsync(b);
-                byte[] pdf = await convertToPdfService.ConvertToPdf(
-                    html.ToString(false),
-                    GetFileName(dte)
-                );
-                return File(pdf, "application/pdf", $"{GetFileName(dte)}.pdf");
+                    var bytes = await graph.BajarFile(dte.EmissionErpA);
+                    XDocument respnseXml = XDocument.Parse(Encoding.UTF8.GetString(bytes));
+                    var b = respnseXml
+                          .Descendants()
+                          .First(p => p.Name.LocalName == "DTE")
+                          .ToString();
+                    byte[] html = xsltService.TransformarXslt(Encoding.UTF8.GetBytes(b));
+                    byte[] pdf = await convertToPdfService.ConvertToPdf(
+                      Encoding.UTF8.GetString(html),
+                        GetFileName(dte)
+                    );
+                    return File(pdf, "application/pdf", $"{GetFileName(dte)}.pdf");
+                }
+                else
+                {
+                    Mensaje = $"El documento no ha sido subido al Drive.";
+                }
             }
             catch (Exception ex)
             {
@@ -147,7 +163,7 @@ namespace PortalFacturas.Pages
             return Page();
         }
 
-        private string GetFileName(DteResult dte)
+        private string GetFileName(Dte dte)
         {
             string filename = string.Empty;
             if (dte.Type == 1) //33

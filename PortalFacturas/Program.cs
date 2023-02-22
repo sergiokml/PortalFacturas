@@ -1,4 +1,6 @@
 
+using Cve.Coordinador.Infraestructure;
+
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
@@ -17,7 +19,7 @@ namespace PortalFacturas
             .ConfigureWebHostDefaults(webBuilder =>
             {
                 webBuilder.UseStartup<Startup>();
-            });
+            }).CoordinadorBuild();
         }
     }
 }

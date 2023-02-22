@@ -1,5 +1,6 @@
 using System;
 
+using Cve.Coordinador;
 using Cve.Notificacion;
 
 using Microsoft.AspNetCore.Builder;
@@ -8,8 +9,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+using PortalFacturas.Interfaces;
 using PortalFacturas.Services;
-
 namespace PortalFacturas
 {
     public class Startup
@@ -25,28 +26,16 @@ namespace PortalFacturas
         {
             services.AddRazorPages();
             services.AddScoped<GraphService>();
-            // Cliente Cen
-            services.AddHttpClient<IApiCenService, ApiCenService>(
-                c =>
-                    c.BaseAddress = new Uri(
-                        configuration.GetConnectionString("EndPointApiCen") ?? ""
-                    )
-            );
-            // Cliente Sharepoint
-            services.AddHttpClient<ISharePointService, SharePointService>(
-                c =>
-                    c.BaseAddress = new Uri(
-                        configuration.GetConnectionString("EndPointSharepoint") ?? ""
-                    )
-            );
-            // Cliente Pdf
+            services.AddScoped<CoordinadorInit>();
+
+            // CLIENTE PDF
             services.AddHttpClient<IConvertToPdfService, ConvertToPdfService>(
                 c =>
                     c.BaseAddress = new Uri(
                         configuration.GetConnectionString("EndPointApiConvertToPdf") ?? ""
                     )
             );
-            services.Configure<AppSettings>(configuration);
+            // COOKIES
             services
                 .AddAuthentication("appcookie")
                 .AddCookie(
@@ -93,6 +82,7 @@ namespace PortalFacturas
                     }
                 }
             );
+
             app.UseSession();
             app.UseHttpsRedirection();
             app.UseStaticFiles();
