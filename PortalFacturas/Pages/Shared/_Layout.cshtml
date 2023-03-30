@@ -31,10 +31,9 @@
 
     <footer class="border-top footer text-muted">
         @{
+        string version = "\tv2.4";
                     string email = @User.FindFirstValue(ClaimTypes.Email);
-        <div class="container">             
-            &copy; 2022 - CVE  @email
-        </div>
+            <div class="container">&copy; 2022 - CVE @version       user:  @email </div>
                 }
     </footer>
 
