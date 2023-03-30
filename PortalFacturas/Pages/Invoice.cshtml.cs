@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 
 using Cve.Coordinador.Models;
+using Cve.Impuestos.Helpers;
 using Cve.Notificacion;
 
 using Microsoft.AspNetCore.Authorization;
@@ -31,10 +32,7 @@ namespace PortalFacturas.Pages
         [BindProperty]
         public string Mensaje { get; set; }
 
-        public InvoiceModel(
-            IConvertToPdfService convertToPdfService,
-            GraphService graph
-        )
+        public InvoiceModel(IConvertToPdfService convertToPdfService, GraphService graph)
         {
             this.convertToPdfService = convertToPdfService;
             this.graph = graph;
@@ -51,28 +49,17 @@ namespace PortalFacturas.Pages
                 HttpContext.Session,
                 "Instrucciones"
             );
-            foreach (Instruction item in temp)
+
+            try
             {
-                try
-                {
-                    var dtes = item.DteAsociados;
-                    if (dtes != null)
-                    {
-                        foreach (var d in dtes)
-                        {
-                            if (d.Id == render)
-                            {
-                                return d;
-                            }
-                        }
-                    }
-                }
-                catch (Exception)
-                {
-                    throw new Exception("");
-                }
+                return temp.SelectMany(store => store.DteAsociados)
+                    .Where(address => address.Id == render)
+                    .FirstOrDefault();
             }
-            return null;
+            catch (Exception)
+            {
+                throw new Exception("");
+            }
         }
 
         //Html
@@ -86,18 +73,18 @@ namespace PortalFacturas.Pages
                     var bytes = await graph.BajarFile(dte.EmissionErpA);
                     XDocument respnseXml = XDocument.Parse(Encoding.UTF8.GetString(bytes));
                     var b = respnseXml
-                             .Descendants()
-                             .First(p => p.Name.LocalName == "DTE")
-                             .ToString();
-                    byte[] html = xsltService.TransformarXslt(Encoding.UTF8.GetBytes(b));
-                    MemoryStream memoryStream = new(html);
-                    return new FileStreamResult(memoryStream, "text/html");
+                        .Descendants()
+                        .First(p => p.Name.LocalName == "DTE")
+                        .ToString();
+                    var html = xsltService.GenerateHtml(b);
+                    //MemoryStream memoryStream = new(html);
+                    return new ContentResult { Content = html, ContentType = "text/html" };
+                    //return new FileStreamResult(memoryStream, "text/html");
                 }
                 else
                 {
                     Mensaje = $"El documento no ha sido subido al Drive.";
                 }
-
             }
             catch (Exception ex)
             {
@@ -137,18 +124,14 @@ namespace PortalFacturas.Pages
                 Dte dte = BuscarInst(Convert.ToInt32(render));
                 if (dte.EmissionErpA != "0")
                 {
-
                     var bytes = await graph.BajarFile(dte.EmissionErpA);
                     XDocument respnseXml = XDocument.Parse(Encoding.UTF8.GetString(bytes));
                     var b = respnseXml
-                          .Descendants()
-                          .First(p => p.Name.LocalName == "DTE")
-                          .ToString();
-                    byte[] html = xsltService.TransformarXslt(Encoding.UTF8.GetBytes(b));
-                    byte[] pdf = await convertToPdfService.ConvertToPdf(
-                      Encoding.UTF8.GetString(html),
-                        GetFileName(dte)
-                    );
+                        .Descendants()
+                        .First(p => p.Name.LocalName == "DTE")
+                        .ToString();
+                    var html = xsltService.GenerateHtml(b);
+                    byte[] pdf = await convertToPdfService.ConvertToPdf(html, GetFileName(dte));
                     return File(pdf, "application/pdf", $"{GetFileName(dte)}.pdf");
                 }
                 else

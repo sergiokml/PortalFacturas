@@ -7,9 +7,8 @@
 
   <ItemGroup>
     <PackageReference Include="Cve.Coordinador" Version="1.0.0" />
-    <PackageReference Include="Cve.Notificacion" Version="1.0.0" />
-    <PackageReference Include="ZXing.Net" Version="0.16.8" />
-    <PackageReference Include="ZXing.Net.Bindings.CoreCompat.System.Drawing" Version="0.16.5-beta" />
+    <PackageReference Include="Cve.Impuestos" Version="1.2.1" />
+    <PackageReference Include="Cve.Notificacion" Version="1.2.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,13 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Resources\Custodium.xslt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Models\" />
+    <Folder Include="Resources\" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>

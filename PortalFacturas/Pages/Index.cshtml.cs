@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Cve.Coordinador;
@@ -46,7 +47,9 @@ namespace PortalFacturas.Pages
             {
                 if (ModelState.IsValid)
                 {
-                    string token = await cen.AuthenticateService.AuthenticateAsync();
+                    string token = await cen.AuthenticateService.Authenticate(
+                        CancellationToken.None
+                    );
                     if (!string.IsNullOrEmpty(token))
                     {
                         await SetAuthCookieAsync(UserName);

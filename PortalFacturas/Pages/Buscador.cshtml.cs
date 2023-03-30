@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Cve.Coordinador;
@@ -181,16 +182,17 @@ namespace PortalFacturas.Pages
                     TempData.Keep("ReceptorID");
 
                     var l = (
-                        await cen.InstructionService.GetManyById(
+                        await cen.InstructionService.GetById(
                             EmisorID.ToString(),
-                            ReceptorID.ToString()
+                            ReceptorID.ToString(),
+                            CancellationToken.None
                         )
                     )
                         .Where(c => c.Amount >= 10)
                         .ToList();
 
                     Count = l.Count();
-                    await cen.DteService.GetDocumentos(l.ToList());
+                    await cen.DteService.GetDocumentos(l.ToList(), CancellationToken.None);
                     SessionHelperExtension.SetObjectAsJson(HttpContext.Session, "Instrucciones", l);
 
                     Instructions = l.OrderByDescending(
@@ -258,12 +260,15 @@ namespace PortalFacturas.Pages
                     nameof(Participant.BusinessName)
                 );
             }
-            else // Falso
+            else
             {
+                // PRIMERA CARGA
+                // COMBOBOX RECEPTOR
                 string email = User.FindFirstValue(ClaimTypes.Email);
-                var agenteUser = await cen.AgentService.GetByEmail(email);
-                var receptor = await cen.ParticipantService.GetManyAsync(
-                    agenteUser.Participants.Select(c => c.ParticipantID).ToArray()
+                var agenteUser = await cen.AgentService.GetByEmail(email, CancellationToken.None);
+                var receptor = await cen.ParticipantService.GetById(
+                    agenteUser.FirstOrDefault().Participants.Select(c => c.ParticipantID).ToArray(),
+                    CancellationToken.None
                 );
                 ParticipantReceptorList = receptor.ToList();
                 ParticipantReceptor = new SelectList(
@@ -276,12 +281,14 @@ namespace PortalFacturas.Pages
                     "ParticipantReceptor",
                     ParticipantReceptorList
                 );
-                // EMAIL PROPIO
+                // COMBOBOX EMISOR
                 var agenteCve = await cen.AgentService.GetByEmail(
-                    config.GetSection("CENConfig:User").Value!
+                    config.GetSection("CENConfig:User").Value!,
+                    CancellationToken.None
                 );
-                var emisor = await cen.ParticipantService.GetManyAsync(
-                    agenteCve.Participants.Select(c => c.ParticipantID).ToArray()
+                var emisor = await cen.ParticipantService.GetById(
+                    agenteCve.FirstOrDefault().Participants.Select(c => c.ParticipantID).ToArray(),
+                    CancellationToken.None
                 );
                 ParticipantEmisorList = emisor.OrderBy(c => c.BusinessName).ToList();
                 ParticipantEmisor = new SelectList(

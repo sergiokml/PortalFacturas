@@ -1,5 +1,5 @@
-
 using Cve.Coordinador.Infraestructure;
+using Cve.Impuestos.Extensions;
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
@@ -16,10 +16,14 @@ namespace PortalFacturas
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
             return Host.CreateDefaultBuilder(args)
-            .ConfigureWebHostDefaults(webBuilder =>
-            {
-                webBuilder.UseStartup<Startup>();
-            }).CoordinadorBuild();
+                .ConfigureWebHostDefaults(
+                    webBuilder =>
+                    {
+                        webBuilder.UseStartup<Startup>();
+                    }
+                )
+                .CoordinadorBuild()
+                .ImpuestosBuild();
         }
     }
 }

@@ -59,25 +59,5 @@ namespace PortalFacturas.Properties {
                 resourceCulture = value;
             }
         }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
-        ///&lt;xsl:stylesheet version=&quot;2.0&quot;
-        ///xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot;
-        ///xmlns:sii=&quot;http://www.sii.cl/SiiDte&quot;
-        ///xmlns:str=&quot;http://exslt.org/strings&quot;
-        ///extension-element-prefixes=&quot;str sii&quot;
-        ///                xmlns:ms=&quot;urn:schemas-microsoft-com:xslt&quot;&gt;
-        ///  &lt;xsl:output method=&quot;xml&quot; indent=&quot;yes&quot; /&gt;
-        ///
-        ///  &lt;xsl:param name=&quot;TedTimbre&quot;&gt; &lt;/xsl:param&gt;
-        ///  &lt;xsl:variable name=&quot;FechaHora&quot; select=&quot;/sii:DTE/sii:Documento/sii:Encabezado/sii:IdDoc/sii:FchEmis|
-        ///									   /DTE/Docume [resto de la cadena truncado]&quot;;.
-        /// </summary>
-        internal static string Custodium {
-            get {
-                return ResourceManager.GetString("Custodium", resourceCulture);
-            }
-        }
     }
 }
