@@ -1,0 +1,17 @@
+{
+  "ExtendedData": {
+    "inputs": [
+      "https://ws1.sii.cl/WSREGISTRORECLAMODTE/registroreclamodteservice?wsdl"
+    ],
+    "collectionTypes": [
+      "System.Array",
+      "System.Collections.Generic.Dictionary`2"
+    ],
+    "namespaceMappings": [
+      "*, ServiceReclamaAceptaConsultaDte"
+    ],
+    "sync": true,
+    "targetFramework": "net6.0",
+    "typeReuseMode": "None"
+  }
+}

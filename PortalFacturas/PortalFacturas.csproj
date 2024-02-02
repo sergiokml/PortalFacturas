@@ -6,13 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Cve.Coordinador" Version="1.0.0" />
-    <PackageReference Include="Cve.Impuestos" Version="1.2.1" />
-    <PackageReference Include="Cve.Notificacion" Version="1.2.3" />
+    <Folder Include="Resources\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Resources\" />
+    <ProjectReference Include="..\Cve.Coordinador\Cve.Coordinador.csproj" />
+    <ProjectReference Include="..\Cve.Impuestos\Cve.Impuestos.csproj" />
+    <ProjectReference Include="..\Cve.Notificacion\Cve.Notificacion.csproj" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>

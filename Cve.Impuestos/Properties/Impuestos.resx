@@ -1,0 +1,212 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="Custodium" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Custodium.xslt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="UrlConfirmaFolio" xml:space="preserve">
+    <value>https://palena.sii.cl/cvc_cgi/dte/of_confirma_folio</value>
+    <comment>Confirma los datos para la solicitud de descarga de folios.</comment>
+  </data>
+  <data name="UrlContribuyente" xml:space="preserve">
+    <value>https://palena.sii.cl/cvc_cgi/dte/ce_consulta_rut</value>
+    <comment>Accede a bajar cvs o por Rut.</comment>
+  </data>
+  <data name="UrlContribuyenteByRut" xml:space="preserve">
+    <value>https://palena.sii.cl/cvc_cgi/dte/ce_consulta_e</value>
+    <comment>Accede a los datos básicos del contribuyente.</comment>
+  </data>
+  <data name="UrlContribuyenteFile" xml:space="preserve">
+    <value>https://palena.sii.cl/cvc_cgi/dte/ce_empresas_dwnld</value>
+    <comment>Descarga el archivo csv de contribuyentes.</comment>
+  </data>
+  <data name="UrlExportCvsEmitidos" xml:space="preserve">
+    <value>https://www4.sii.cl/consdcvinternetui/services/data/facadeService/getDetalleVentaExport</value>
+    <comment>Exporta documentos emitidos</comment>
+  </data>
+  <data name="UrlExportCvsRecibidos" xml:space="preserve">
+    <value>https://www4.sii.cl/consdcvinternetui/services/data/facadeService/getDetalleCompraExport</value>
+    <comment>Exporta documentos recibidos.</comment>
+  </data>
+  <data name="UrlGeneraArchivo" xml:space="preserve">
+    <value>https://palena.sii.cl/cvc_cgi/dte/of_genera_archivo</value>
+    <comment>Confirma la descarga de folios.</comment>
+  </data>
+  <data name="UrlGeneraFolio" xml:space="preserve">
+    <value>https://palena.sii.cl/cvc_cgi/dte/of_genera_folio</value>
+    <comment>Descarga de folios solicitados.</comment>
+  </data>
+  <data name="UrlGetCaptcha" xml:space="preserve">
+    <value>https://zeus.sii.cl/cvc_cgi/stc/CViewCaptcha.cgi</value>
+    <comment>Captcha para Situacion tributaria.</comment>
+  </data>
+  <data name="UrlMisDteEmitidos" xml:space="preserve">
+    <value>https://www4.sii.cl/consdcvinternetui/services/data/facadeService/getDetalleVenta</value>
+    <comment>Mis DTE en el Sii (emitidos).</comment>
+  </data>
+  <data name="UrlMisDteRecibidos" xml:space="preserve">
+    <value>https://www4.sii.cl/consdcvinternetui/services/data/facadeService/getDetalleCompra</value>
+    <comment>Mis DTE en el Sii (recibidos).</comment>
+  </data>
+  <data name="UrlMisDteResumen" xml:space="preserve">
+    <value>https://www4.sii.cl/consdcvinternetui/services/data/facadeService/getResumen</value>
+    <comment>Mis DTE en el Sii Resumen.</comment>
+  </data>
+  <data name="UrlReObtencionConecta" xml:space="preserve">
+    <value>https://palena.sii.cl/cvc_cgi/dte/rf_reobtencion1_folios</value>
+    <comment>Conecta Re obtención folios.</comment>
+  </data>
+  <data name="UrlReObtencionConfirma" xml:space="preserve">
+    <value>https://palena.sii.cl/cvc_cgi/dte/rf_reobtencion3_folios</value>
+    <comment>Confirma una fila de tabla de re obtenciones.</comment>
+  </data>
+  <data name="UrlReObtencionFolios" xml:space="preserve">
+    <value>https://palena.sii.cl/cvc_cgi/dte/rf_reobtencion2_folios</value>
+    <comment>Solicita tabla de re obtenciones.</comment>
+  </data>
+  <data name="UrlReObtencionGeneraArchivo" xml:space="preserve">
+    <value>https://palena.sii.cl/cvc_cgi/dte/rf_genera_archivo</value>
+    <comment>Descarga el archivo de re obtención de folios</comment>
+  </data>
+  <data name="UrlReObtencionGeneraFolio" xml:space="preserve">
+    <value>https://palena.sii.cl/cvc_cgi/dte/rf_genera_folio</value>
+    <comment>Solicita el archivo de re obtención de folios.</comment>
+  </data>
+  <data name="UrlSituacionTributariaTerceros" xml:space="preserve">
+    <value>https://zeus.sii.cl/cvc_cgi/stc/getstc</value>
+    <comment>Solicita los datos de cualquier conribuyente (con captcha).</comment>
+  </data>
+  <data name="UrlSolicitaFolios" xml:space="preserve">
+    <value>https://palena.sii.cl/cvc_cgi/dte/of_solicita_folios_dcto</value>
+    <comment>Solicita folios mediante tipo de cocumento y rut de cada empresa.</comment>
+  </data>
+  <data name="UrlTokenSeed" xml:space="preserve">
+    <value>https://hercules.sii.cl/cgi_AUT2000/autInicio.cgi</value>
+    <comment>Solicita cookies del certificado digital.</comment>
+  </data>
+  <data name="UrlValidaDte" xml:space="preserve">
+    <value>https://www4.sii.cl/registrorechazodtej6ui/services/data/facadeService/validarAccesoReceptor</value>
+    <comment>Valida los Aceptación y/o Reclamo de un Dte.</comment>
+  </data>
+  <data name="WsdlRegistroReclamoDte" xml:space="preserve">
+    <value>https://ws1.sii.cl/WSREGISTRORECLAMODTE/registroreclamodteservice</value>
+    <comment>Soap por Httpclient</comment>
+  </data>
+</root>

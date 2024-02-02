@@ -1,0 +1,261 @@
+﻿<head>
+    <title>Solicitud de Timbraje Electrónico de Documentos</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <!--<script type="text/javascript" src="https://zeus.sii.cl/admin/barranav.js">
+    </script>
+    <script type="text/javascript" src="/cvc/dte/validadte.js">
+    </script>-->
+    <style type="text/css">
+        .titulo {
+            font-family: arial,helvetica;
+            font-style: bold;
+            font-size: 14pt;
+            text-decoration: none;
+            color: #000000;
+        }
+
+        .texto {
+            font-family: arial,helvetica;
+            font-style: normal;
+            font-size: 10pt;
+            text-decoration: none;
+            color: #000000;
+        }
+
+        .reporte {
+            font-family: arial,helvetica;
+            font-style: normal;
+            font-size: 7.5pt;
+            text-decoration: none;
+            color: #000000;
+        }
+    </style>
+</head>
+<body link="#003399">
+    <center>
+        <div>
+            <table border="0" width="920">
+                <tbody>
+                    <tr>
+                        <td width="920">
+                            <!--<script type="text/javascript">mostrar();</script>-->
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="920">
+                            <p align="justify">
+                                <br>
+                                <font color="#000000" face="Arial" size="4">
+                                    <strong>
+                                        <b>
+                                            SOLICITUD DE TIMBRAJE ELECTRONICO DE DOCUMENTOS
+                                        </b>
+                                    </strong>
+                                </font><br>
+                                <font class="texto">En esta página podrá solicitar rangos de numeración para utilizar en los Documentos Tributarios Electrónicos autorizados para los contribuyentes.</font>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td height="40">
+                            <hr>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </center>
+
+
+    <center>
+        <table border="0">
+            <tbody>
+                <tr>
+                    <td width="630">
+                        <p align="justify">
+                            <font class="texto">
+                                A través de esta aplicación usted puede solicitar
+                                Timbraje de Documentos vía Internet.   Para lo cual, deberá completar los siguientes datos :
+                            </font>
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <form name="form1" method="POST" action="/cvc_cgi/dte/of_confirma_folio" onsubmit="return validapag(1)">
+            <table border="0" width="630" cellspacing="1">
+                <tbody>
+                    <tr>
+                        <td width="400">
+                            <font class="texto">
+                                RUT Empresa
+                            </font>
+                        </td>
+                        <td width="220">
+                            <input name="RUT_EMP" readonly="readonly" value="76470581" type="Text" size="8" maxlength="8"> -
+                            <input name="DV_EMP" readonly="readonly" value="5" type="Text" size="1" maxlength="1" onblur="this.value=this.value.toUpperCase()">
+                            <input name="FOLIO_INICIAL" type="hidden" value="0">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="330">
+                            <font class="texto">
+                                Seleccione el Documento a Timbrar
+                            </font>
+                        </td>
+                        <td>
+                            <select name="COD_DOCTO" onchange="changeRegregion('/cvc_cgi/dte/');">
+                                <option selected="" value="-1">NINGUNO</option>
+                                <option value="33" selected="">FACTURA ELECTRONICA(COD. 33)</option>
+                                <option value="34">FACTURA NO AFECTA O EXENTA ELECTRONICA (COD. 34)</option>
+                                <option value="56">NOTA DEBITO ELECTRONICA (COD. 56)</option>
+                                <option value="61">NOTA CREDITO ELECTRONICA (COD. 61)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="260">
+                            <input name="AFECTO_IVA" type="HIDDEN" value="S">
+                            <input name="CON_CREDITO" type="HIDDEN" value="1">
+                            <input name="CON_AJUSTE" type="HIDDEN" value="0">
+                            <input name="FACTOR" type="HIDDEN" value="1.00">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="260">
+                            <font class="texto">
+                            </font>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="400">
+                            <font class="texto">
+                                Rango máximo autorizado a timbrar
+                            </font>
+                        </td>
+                        <td width="220">
+                            <input name="MAX_AUTOR" readonly="readonly" color="#888" value="1148" type="text" size="8" maxlength="8">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="260">
+                            <input name="ULT_TIMBRAJE" type="HIDDEN" value="1">
+                            <input name="CON_HISTORIA" type="HIDDEN" value="0">
+                            <input name="FOLIO_INICRE" type="HIDDEN" value="">
+                            <input name="FOLIO_FINCRE" type="HIDDEN" value="">
+                            <input name="FECHA_ANT" type="HIDDEN" value="">
+                            <input name="ESTADO_TIMBRAJE" type="HIDDEN" value="">
+                            <input name="CONTROL" type="HIDDEN" value="">
+                            <input name="CANT_TIMBRAJES" type="HIDDEN" value="">
+                            <font class="texto">
+                                <b>
+                                    Ingrese N° de Folios a Timbrar
+                                </b>
+                            </font>
+                        </td>
+                        <td>
+                            <input name="CANT_DOCTOS" type="text" size="8" maxlength="8">
+                        </td>
+                    </tr>
+                </tbody>
+            </table><br><br>
+            &nbsp;&nbsp;<input name="ACEPTAR" type="SUBMIT" maxlength="20" value="Solicitar Numeración">&nbsp;&nbsp;
+            <input type="button" name="NEW" value="  Volver  " onclick="volver(1);">
+            <br><br><table border="0">
+                <tbody>
+                    <tr>
+                        <td width="630">
+                            <p align="justify">
+                                <font class="texto">
+                                    Según los registros del SII, considerando el timbraje histórico de documentos y de los documentos emitidos y/o anulados, la empresa posee folios disponibles o sin utilizar, por un total de
+                                    <input name="FOLIOS_DISP" readonly="readonly" bgcolor="#cccccc" value="16" type="text" size="8" maxlength="8">
+
+                                </font>
+                            </p><p align="justify"><font class="texto"><font class="texto"><br><br></font></font></p><center>
+                                <font class="texto">
+                                    <font class="texto">
+                                        <table border="1">
+                                            <tbody>
+                                                <tr>
+                                                    <td align="justify">
+                                                        <font class="texto">
+                                                            <table border="0">
+                                                                <tbody>
+                                                                    <tr>
+                                                                        <td width="630">
+                                                                            <p align="justify">
+                                                                                <font class="texto">
+                                                                                    <u><b> GLOSARIO:</b></u>
+                                                                                </font>
+                                                                            </p>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td width="630">
+                                                                            <p align="justify">
+                                                                                <font class="texto">
+                                                                                </font>
+                                                                            </p>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td width="630">
+                                                                            <p align="justify">
+                                                                                <font class="texto">
+                                                                                    <b>Rango máximo autorizado a timbrar:</b> es el número máximo de folios que el SII autoriza al contribuyente, en función de la emisión de documentos, folios anulados de los últimos 6 meses y los <b>folios disponibles</b> del contribuyente.
+                                                                                </font>
+                                                                            </p>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td width="630">
+                                                                            <p align="justify">
+                                                                                <font class="texto">
+                                                                                    Estos valores varían de acuerdo al timbraje, emisión, anulación, comportamiento tributario, y el instante en que se consulte.
+                                                                                </font>
+                                                                            </p>
+                                                                        </td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </font>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </font>
+                                </font>
+                            </center><font class="texto">
+                                <font class="texto">
+                                </font>
+                            </font>
+                        </td>
+                    </tr>
+                    <tr></tr>
+                </tbody>
+            </table><table border="0">
+                <tbody>
+                    <tr>
+                        <td width="930">
+                            <font class="texto">
+                                Mediante la presente solicitud declaro conocer y aceptar las condiciones que el SII establece para la autorización de Timbraje de Documentos Electrónicos.
+                            </font>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+    </center>
+    <p></p>
+
+    <script type="text/javascript">document.form1.RUT_EMP.focus()</script>
+    <div id="certifica" style="position:absolute; width:0; height:0; z-index:6;top: 0; left: 0; visibility: hidden">
+        <script type="text/javascript" src="/admin/certifica_dte.js">
+        </script>
+        <script type="text/javascript">
+certifica(14484,'Prod','auttim');
+        </script>
+    </div>
+
+
+</body>

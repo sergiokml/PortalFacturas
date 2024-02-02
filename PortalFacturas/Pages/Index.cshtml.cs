@@ -1,94 +1,89 @@
-﻿using System;
+﻿using Cve.Coordinador.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Cve.Coordinador;
+namespace PortalFacturas.Pages;
 
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-
-namespace PortalFacturas.Pages
+public class IndexModel : PageModel
 {
-    public class IndexModel : PageModel
+    private readonly IAuthenticateService cen;
+
+    //[BindProperty]
+    //public string UserName { get; set; }
+
+    [BindProperty]
+    public string Password { get; set; }
+
+    [BindProperty]
+    public bool Recordar { get; set; }
+
+    public IndexModel(IAuthenticateService cen)
     {
-        private readonly CoordinadorInit cen;
+        this.cen = cen;
+    }
 
-        //[BindProperty]
-        //public string UserName { get; set; }
-
-        [BindProperty]
-        public string Password { get; set; }
-
-        [BindProperty]
-        public bool Recordar { get; set; }
-
-        public IndexModel(CoordinadorInit cen)
+    public IActionResult OnGet()
+    {
+        if (User.Identity.IsAuthenticated)
         {
-            this.cen = cen;
+            return RedirectToPage("/Buscador");
         }
+        TempData.Clear();
+        //throw new Exception();
+        return Page();
+    }
 
-        public IActionResult OnGet()
+    public async Task<IActionResult> OnPostAsync(string UserName)
+    {
+        try
         {
-            if (User.Identity.IsAuthenticated)
+            if (ModelState.IsValid)
             {
-                return RedirectToPage("/Buscador");
-            }
-            TempData.Clear();
-            //throw new Exception();
-            return Page();
-        }
-
-        public async Task<IActionResult> OnPostAsync(string UserName)
-        {
-            try
-            {
-                if (ModelState.IsValid)
+                string token = await cen.Authenticate(CancellationToken.None);
+                if (!string.IsNullOrEmpty(token))
                 {
-                    string token = await cen.AuthenticateService.Authenticate(
-                        CancellationToken.None
-                    );
-                    if (!string.IsNullOrEmpty(token))
+                    await SetAuthCookieAsync(UserName);
+                    return RedirectToPage("/Buscador");
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(UserName) && Password == "cvepagos2022")
                     {
+                        //UserName = "miguel.nava@goplicity.com";
                         await SetAuthCookieAsync(UserName);
                         return RedirectToPage("/Buscador");
                     }
-                    else
-                    {
-                        if (!string.IsNullOrEmpty(UserName) && Password == "cvepagos2022")
-                        {
-                            //UserName = "miguel.nava@goplicity.com";
-                            await SetAuthCookieAsync(UserName);
-                            return RedirectToPage("/Buscador");
-                        }
-                    }
                 }
             }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError(string.Empty, ex.Message);
-                return RedirectToPage("/Error");
-                //throw new Exception(ex.Message);
-            }
-            return Page();
         }
-
-        private async Task SetAuthCookieAsync(string UserName)
+        catch (Exception ex)
         {
-            List<Claim> claims = new() { new Claim(ClaimTypes.Email, UserName) };
-            ClaimsIdentity identity = new(claims, "appcookie");
-            ClaimsPrincipal claimsPrincipal = new(identity);
-            await HttpContext.SignInAsync(
-                "appcookie",
-                claimsPrincipal,
-                new AuthenticationProperties
-                {
-                    IsPersistent = Recordar,
-                    ExpiresUtc = DateTime.UtcNow.AddMinutes(120) //Dura 120 min
-                }
-            );
+            ModelState.AddModelError(string.Empty, ex.Message);
+            return RedirectToPage("/Error");
+            //throw new Exception(ex.Message);
         }
+        return Page();
+    }
+
+    private async Task SetAuthCookieAsync(string UserName)
+    {
+        List<Claim> claims = new() { new Claim(ClaimTypes.Email, UserName) };
+        ClaimsIdentity identity = new(claims, "appcookie");
+        ClaimsPrincipal claimsPrincipal = new(identity);
+        await HttpContext.SignInAsync(
+            "appcookie",
+            claimsPrincipal,
+            new AuthenticationProperties
+            {
+                IsPersistent = Recordar,
+                ExpiresUtc = DateTime.UtcNow.AddMinutes(120) //Dura 120 min
+            }
+        );
     }
 }
