@@ -1,9 +1,11 @@
-﻿using Cve.Coordinador.Services.Interfaces;
+﻿using Cve.Coordinador.Models;
+using Cve.Coordinador.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +15,7 @@ namespace PortalFacturas.Pages;
 public class IndexModel : PageModel
 {
     private readonly IAuthenticateService cen;
+    private readonly IAgentService age;
 
     //[BindProperty]
     //public string UserName { get; set; }
@@ -23,9 +26,10 @@ public class IndexModel : PageModel
     [BindProperty]
     public bool Recordar { get; set; }
 
-    public IndexModel(IAuthenticateService cen)
+    public IndexModel(IAuthenticateService cen, IAgentService age)
     {
         this.cen = cen;
+        this.age = age;
     }
 
     public IActionResult OnGet()
@@ -45,19 +49,26 @@ public class IndexModel : PageModel
         {
             if (ModelState.IsValid)
             {
-                string token = await cen.Authenticate(CancellationToken.None);
-                if (!string.IsNullOrEmpty(token))
+                IEnumerable<Agent> agenteUser = await age.GetByEmail(
+                    UserName,
+                    CancellationToken.None
+                );
+                if (agenteUser.Count() > 0)
                 {
-                    await SetAuthCookieAsync(UserName);
-                    return RedirectToPage("/Buscador");
-                }
-                else
-                {
-                    if (!string.IsNullOrEmpty(UserName) && Password == "cvepagos2022")
+                    string token = await cen.Authenticate(CancellationToken.None);
+                    if (!string.IsNullOrEmpty(token))
                     {
-                        //UserName = "miguel.nava@goplicity.com";
                         await SetAuthCookieAsync(UserName);
                         return RedirectToPage("/Buscador");
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(UserName) && Password == "cvepagos2022")
+                        {
+                            //UserName = "miguel.nava@goplicity.com";
+                            await SetAuthCookieAsync(UserName);
+                            return RedirectToPage("/Buscador");
+                        }
                     }
                 }
             }

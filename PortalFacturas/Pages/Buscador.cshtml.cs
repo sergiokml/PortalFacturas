@@ -61,7 +61,6 @@ public class BuscadorModel : PageModel
     public string Folio { get; set; }
 
     public BuscadorModel(
-        IParticipantService cen,
         IConfiguration config,
         IDteService dte,
         IParticipantService part,
@@ -188,7 +187,7 @@ public class BuscadorModel : PageModel
                 TempData.Keep("EmisorID");
                 TempData.Keep("ReceptorID");
 
-                var l = (
+                List<Instruction> l = (
                     await inst.GetById(
                         EmisorID.ToString(),
                         ReceptorID.ToString(),
@@ -211,7 +210,7 @@ public class BuscadorModel : PageModel
                 {
                     throw new Exception("No existen instrucciones de Pago.");
                 }
-                foreach (var item in Instructions)
+                foreach (Instruction item in Instructions)
                 {
                     if (item.DteAsociados != null)
                     {
@@ -269,8 +268,8 @@ public class BuscadorModel : PageModel
             // PRIMERA CARGA
             // COMBOBOX RECEPTOR
             string email = User.FindFirstValue(ClaimTypes.Email);
-            var agenteUser = await age.GetByEmail(email, CancellationToken.None);
-            var receptor = await part.GetById(
+            IEnumerable<Agent> agenteUser = await age.GetByEmail(email, CancellationToken.None);
+            IEnumerable<Participant> receptor = await part.GetById(
                 agenteUser.FirstOrDefault().Participants.Select(c => c.ParticipantID).ToArray(),
                 CancellationToken.None
             );
@@ -286,11 +285,11 @@ public class BuscadorModel : PageModel
                 ParticipantReceptorList
             );
             // COMBOBOX EMISOR
-            var agenteCve = await age.GetByEmail(
+            IEnumerable<Agent> agenteCve = await age.GetByEmail(
                 config.GetSection("CENConfig:User").Value!,
                 CancellationToken.None
             );
-            var emisor = await part.GetById(
+            IEnumerable<Participant> emisor = await part.GetById(
                 agenteCve.FirstOrDefault().Participants.Select(c => c.ParticipantID).ToArray(),
                 CancellationToken.None
             );
